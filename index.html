@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>세종교회 월간 일정</title>
+<style>
+:root{--bg:#F3F1EB;--ink:#1C1F26;--sub:#4A5160;--mute:#6B7280;--faint:#B8BCC4;--card:#FFFFFF;--line:#E4E1D9;--red:#C0392B;--blue:#2B4F8F;--green:#1F7A4A}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+button,input,select,textarea{font:inherit}
+.hidden{display:none!important}
+/* 잠금·설정 화면 */
+.screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:50;padding:16px;overflow:auto}
+.box{width:100%;max-width:400px;background:var(--card);border-radius:16px;padding:30px 26px;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 30px rgba(28,31,38,.08)}
+.box h1{margin:0;font-size:21px}
+.box p{margin:0;color:var(--mute);font-size:14px;line-height:1.55}
+.box label{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700;color:var(--sub)}
+.box input[type=password],.box input[type=text]{padding:12px 14px;border:1px solid var(--line);border-radius:10px;font-size:16px;font-weight:400}
+.chk{flex-direction:row!important;align-items:center;gap:8px!important;font-weight:400!important}
+.err{color:var(--red);font-size:13px;min-height:18px}
+.btn{padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font-size:14px;min-height:42px}
+.btn:hover{border-color:var(--sub)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.save{background:var(--green);color:#fff;border-color:var(--green)}
+.btn.danger{color:var(--red)}
+.demo{background:#FFF4C2;color:#6B4A0C;font-size:13px;padding:8px 12px;border-radius:8px;line-height:1.5}
+/* 앱 */
+#app{padding:28px 32px 40px;max-width:1680px;margin:0 auto}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+.eyebrow{font-size:14px;font-weight:700;letter-spacing:.12em;color:var(--green)}
+.title{display:flex;align-items:baseline;gap:14px}
+.title h1{margin:0;font-size:64px;font-weight:900;line-height:1;font-family:"Noto Serif KR","Nanum Myeongjo",serif}
+.title span{font-size:24px;color:var(--sub)}
+.slogan{text-align:right;font-size:14px;color:var(--sub);line-height:1.6}
+.slogan b{color:var(--ink)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:18px 0 12px}
+.toolbar .sp{flex:1}
+.adminbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:#1C1F26;color:#fff;border-radius:12px;padding:10px 12px;margin-bottom:12px}
+.adminbar .tag{font-size:13px;font-weight:700;background:var(--green);padding:4px 10px;border-radius:999px}
+.adminbar .st{font-size:13px;color:#D6D8DC}
+.adminbar .st.warn{color:#FFB4A8}
+.adminbar .sp{flex:1}
+.adminbar .btn{background:transparent;color:#fff;border-color:#4A5160}
+.adminbar .btn.save{background:var(--green);border-color:var(--green)}
+.legend{display:flex;gap:18px;flex-wrap:wrap;align-items:center;background:var(--card);border-radius:12px;padding:12px 16px;font-size:13px;color:#3A3F4A}
+.legend i{display:inline-block;width:13px;height:13px;border-radius:4px;vertical-align:-2px;margin-right:6px;border:2px solid}
+.legend .hint{margin-left:auto;color:var(--mute)}
+.cal{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+.grid{display:grid;grid-template-columns:1.5fr repeat(6,minmax(0,1fr));gap:6px}
+.dow{padding:8px 10px;font-size:14px;font-weight:700;letter-spacing:.1em;color:var(--sub);border-bottom:2px solid var(--ink)}
+.dow.sun{color:var(--red)}.dow.sat{color:var(--blue)}
+.week{display:flex;flex-direction:column;gap:6px}
+.wk{display:flex;align-items:center;gap:10px;padding:0 4px;min-height:26px;border-radius:6px;flex-wrap:wrap}
+.admin .wk{cursor:pointer}
+.admin .wk:hover{background:rgba(28,31,38,.05)}
+.wk .no{font-size:12px;font-weight:700;color:#fff;background:var(--ink);padding:3px 9px;border-radius:999px}
+.wk .th{font-size:15px;font-weight:700}
+.wk .th.empty{color:var(--faint);font-weight:500}
+.wk .sb{font-size:15px;color:#5B6170}
+.cell{background:var(--card);border-radius:10px;padding:9px 10px 12px;min-height:110px;display:flex;flex-direction:column;gap:5px;min-width:0;border:1px solid transparent}
+.admin .cell{cursor:pointer}
+.admin .cell:hover{border-color:var(--line)}
+.cell.out{background:#FBFAF7}
+.cell.today{border:2px solid var(--green)}
+.dh{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.num{font-size:21px;font-weight:700;font-family:"Noto Serif KR","Nanum Myeongjo",serif}
+.num.red{color:var(--red)}.num.blue{color:var(--blue)}.num.out{color:var(--faint)}
+.wd{display:none;font-size:13px;font-weight:700;color:var(--sub)}
+.hol{font-size:12px;font-weight:700;color:#B42318}
+.chip{display:flex;gap:7px;align-items:flex-start;padding:5px 8px;border-radius:7px}
+.chip .dot{flex-shrink:0;width:7px;height:7px;border-radius:50%;margin-top:6px}
+.chip .t{font-size:13.5px;font-weight:700;line-height:1.35}
+.chip .m{font-size:11.5px;opacity:.85}
+.dept{padding:1px 2px;border-radius:4px}
+.admin .dept,.admin .chip{cursor:pointer}
+.admin .dept:hover,.admin .chip:hover{outline:2px solid rgba(28,31,38,.15)}
+.dept .t{font-size:13px;line-height:1.35}
+.dept .t b{color:#0F6E66}
+.dept .m{font-size:11.5px;color:var(--mute)}
+.sep{height:1px;background:#ECEAE4;margin:1px 0}
+.add{display:none;font-size:12px;color:var(--faint);margin-top:auto;padding-top:2px}
+.admin .add{display:block}
+.memo{margin-top:14px;font-size:13px;color:var(--mute)}
+.admin .memo{cursor:pointer}
+.memo b{color:var(--sub);margin-right:8px}
+/* 모달 */
+#modal{position:fixed;inset:0;background:rgba(28,31,38,.35);display:flex;align-items:center;justify-content:center;z-index:40;padding:16px}
+.mbox{width:100%;max-width:440px;background:var(--card);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:12px;max-height:90vh;overflow:auto}
+.mbox h2{margin:0;font-size:18px}
+.mbox label{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--sub);font-weight:700}
+.mbox input,.mbox select,.mbox textarea{padding:10px 12px;border:1px solid var(--line);border-radius:9px;font-size:16px;font-weight:400;color:var(--ink)}
+.kinds{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.kinds button{padding:9px 6px;border-radius:9px;border:2px solid transparent;cursor:pointer;font-size:13px;font-weight:700;min-height:40px}
+.kinds button.on{border-color:var(--ink)}
+.mrow{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.mrow .sp{flex:1}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;z-index:60;max-width:90vw;text-align:center}
+/* 휴대폰: 날짜별 목록으로 */
+@media (max-width:760px){
+  #app{padding:16px}
+  .title h1{font-size:44px}.title span{font-size:18px}
+  .slogan{text-align:left}
+  .legend .hint{margin-left:0}
+  .dowrow{display:none}
+  .grid{grid-template-columns:1fr;gap:6px}
+  .cell{min-height:0}
+  .cell.out{display:none}
+  .cell.empty{display:none}
+  .admin .cell.empty{display:flex}
+  .wd{display:inline}
+  .dh{gap:8px}
+}
+@media print{
+  @page{size:A3 landscape;margin:10mm}
+  body{background:#fff}
+  .toolbar,.adminbar,.legend .hint,.add,.screen,#modal,.toast{display:none!important}
+  #app{padding:0;max-width:none}
+  .grid{grid-template-columns:1.5fr repeat(6,minmax(0,1fr))!important}
+  .dowrow{display:grid!important}
+  .cell{min-height:0;border:1px solid #E4E1D9;display:flex!important}
+  .wd{display:none!important}
+  .wk .th.empty{visibility:hidden}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== 설정 (처음 한 번만 채우기) =====================
+  1) firebase: Firebase 콘솔 → 프로젝트 설정 → 내 앱(웹) 의 firebaseConfig 값을 그대로 붙여넣기
+  2) adminEmail: Firebase Authentication 에 만든 관리자 계정 이메일
+  비워 두면 '데모 모드'(이 기기에만 저장)로 동작합니다.
+======================================================================= -->
+<script>
+window.CAL_CONFIG = {
+  firebase: {
+    apiKey: "AIzaSyCCUHsCrrqQt2r655BpLwACXKN88RhiVkk",
+    authDomain: "sejong-dasnboard.firebaseapp.com",
+    databaseURL: "https://sejong-dasnboard-default-rtdb.firebaseio.com",
+    projectId: "sejong-dasnboard",
+    storageBucket: "sejong-dasnboard.firebasestorage.app",
+    messagingSenderId: "749054078144",
+    appId: "1:749054078144:web:6a3124e6d0ea4eab975125"
+  },
+  adminEmail: "calendar-admin@sejong-calendar.app",
+  dbPath: "sejongCalendar"
+};
+</script>
+
+<div id="loading" class="screen"><div class="box"><p>불러오는 중…</p></div></div>
+
+<div id="setup" class="screen hidden">
+  <form class="box" id="setupForm" autocomplete="off">
+    <h1>처음 설정</h1>
+    <p>관리자 암호와 열람 암호를 정합니다. 열람 암호는 일정을 볼 사람들에게 알려줄 암호이고, 관리자 암호는 수정할 때만 씁니다.</p>
+    <div class="demo hidden" id="demoNote1">지금은 <b>데모 모드</b>입니다. 이 기기에만 저장되며 다른 기기에서는 보이지 않습니다. Firebase를 연결하면 모든 기기에서 볼 수 있습니다.</div>
+    <label><span id="suAdminLbl">관리자 암호</span><input type="password" id="suAdmin"></label>
+    <label class="hidden" id="suAdmin2Wrap">관리자 암호 확인<input type="password" id="suAdmin2"></label>
+    <label>열람 암호 (8자 이상 권장)<input type="password" id="suView"></label>
+    <label>열람 암호 확인<input type="password" id="suView2"></label>
+    <label>기존 일정 불러오기 (선택 · 백업 파일)<input type="file" id="suSeed" accept=".json,application/json"></label>
+    <div class="err" id="suErr"></div>
+    <button class="btn primary" type="submit" id="suBtn">설정하고 시작</button>
+  </form>
+</div>
+
+<div id="lock" class="screen hidden">
+  <form class="box" id="lockForm" autocomplete="off">
+    <h1>세종교회 월간 일정</h1>
+    <p id="lockMsg">열람 암호를 입력하세요.</p>
+    <input type="password" id="viewPw" placeholder="열람 암호" aria-label="열람 암호">
+    <label class="chk"><input type="checkbox" id="remember"> 이 기기에서 암호 기억하기</label>
+    <div class="err" id="lockErr"></div>
+    <button class="btn primary" type="submit" id="lockBtn">열기</button>
+  </form>
+</div>
+
+<div id="app" class="hidden">
+  <div class="adminbar hidden" id="adminbar">
+    <span class="tag">관리자 모드</span>
+    <span class="st" id="saveState">저장됨</span>
+    <span class="sp"></span>
+    <button class="btn save" id="saveBtn">저장</button>
+    <button class="btn" id="backupBtn">백업 받기</button>
+    <button class="btn" id="restoreBtn">백업 불러오기</button>
+    <button class="btn" id="viewPwBtn">열람 암호 변경</button>
+    <button class="btn" id="adminPwBtn">관리자 암호 변경</button>
+    <button class="btn" id="logoutBtn">관리자 나가기</button>
+    <input type="file" id="restoreFile" accept=".json,application/json" class="hidden">
+  </div>
+  <div class="top">
+    <div>
+      <div class="eyebrow" id="eyebrow"></div>
+      <div class="title"><h1 id="mTitle"></h1><span id="yTitle"></span></div>
+    </div>
+    <div class="slogan"><b>슬기로운 교회 생활</b><br>신앙은 열성적으로 · 관계는 헌신적으로 · 업무는 기계적으로</div>
+  </div>
+  <div class="toolbar">
+    <button class="btn" id="prev">◀ 이전 달</button>
+    <button class="btn" id="today">이번 달</button>
+    <button class="btn" id="next">다음 달 ▶</button>
+    <span class="sp"></span>
+    <button class="btn" id="print">인쇄</button>
+    <button class="btn" id="adminBtn">관리자</button>
+    <button class="btn" id="lockBtn2">잠그기</button>
+  </div>
+  <div class="demo hidden" id="demoNote2" style="margin-bottom:12px">데모 모드 — 이 기기에만 저장됩니다. 공유하려면 Firebase 설정이 필요합니다.</div>
+  <div class="legend" id="legend"></div>
+  <div class="cal" id="cal"></div>
+  <div class="memo" id="memo"></div>
+</div>
+
+<div id="modal" class="hidden"><div class="mbox" id="mbox"></div></div>
+
+<script type="module">
+"use strict";
+const CFG = window.CAL_CONFIG;
+const DEMO = !(CFG.firebase && CFG.firebase.apiKey && CFG.firebase.databaseURL && CFG.adminEmail);
+const $ = id => document.getElementById(id);
+
+/* ---------------- 일정 종류·공휴일 ---------------- */
+const KINDS = {
+  edu:      {name:"교육", bg:"#E4F1E8", fg:"#155C36", dot:"#1F7A4A"},
+  evang:    {name:"전도", bg:"#FDEBDD", fg:"#8A3A0A", dot:"#D9651A"},
+  assembly: {name:"총회", bg:"#E3EAF6", fg:"#1B3563", dot:"#2B4F8F"},
+  tribe:    {name:"지파", bg:"#EEE6F7", fg:"#4B2A73", dot:"#7B4FB0"},
+  church:   {name:"교회", bg:"#FBE4E1", fg:"#8E1B12", dot:"#C0392B"},
+  dept:     {name:"부서", bg:"#E0F2F0", fg:"#0F6E66", dot:"#0F6E66"},
+  holiday:  {name:"빨간 날", bg:"#FFFFFF", fg:"#B42318", dot:"#B42318"}
+};
+const FIXED = {"01-01":"신정","03-01":"삼일절","05-05":"어린이날","06-06":"현충일","08-15":"광복절","10-03":"개천절","10-09":"한글날","12-25":"성탄절"};
+const LUNAR = {"2026-02-16":"설날 연휴","2026-02-17":"설날","2026-02-18":"설날 연휴","2026-03-02":"대체공휴일","2026-05-24":"부처님오신날","2026-05-25":"대체공휴일","2026-06-03":"지방선거일","2026-08-17":"대체공휴일","2026-09-24":"추석 연휴","2026-09-25":"추석","2026-09-26":"추석 연휴","2026-10-05":"대체공휴일"};
+const WD = ["일","월","화","수","목","금","토"];
+
+/* ---------------- 암호화 (열람 암호로 AES-GCM) ---------------- */
+const te = new TextEncoder(), td = new TextDecoder();
+const b64 = buf => { let s=""; const a=new Uint8Array(buf); for (let i=0;i<a.length;i++) s+=String.fromCharCode(a[i]); return btoa(s); };
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function deriveKey(pw, salt){
+  const base = await crypto.subtle.importKey("raw", te.encode(pw), "PBKDF2", false, ["deriveKey","deriveBits"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2", salt, iterations:250000, hash:"SHA-256"}, base, {name:"AES-GCM", length:256}, false, ["encrypt","decrypt"]);
+}
+async function encryptWith(k, saltBytes, obj){
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({name:"AES-GCM", iv}, k, te.encode(JSON.stringify(obj)));
+  return {v:1, salt:b64(saltBytes), iv:b64(iv), ct:b64(ct), savedAt:Date.now()};
+}
+async function decryptWith(k, blob){
+  const pt = await crypto.subtle.decrypt({name:"AES-GCM", iv:unb64(blob.iv)}, k, unb64(blob.ct));
+  return JSON.parse(td.decode(pt));
+}
+async function hashPw(pw, saltB64){
+  const salt = saltB64 ? unb64(saltB64) : crypto.getRandomValues(new Uint8Array(16));
+  const base = await crypto.subtle.importKey("raw", te.encode(pw), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits({name:"PBKDF2", salt, iterations:250000, hash:"SHA-256"}, base, 256);
+  return {salt:b64(salt), hash:b64(bits)};
+}
+
+/* ---------------- 저장소 (Firebase 또는 데모) ---------------- */
+function makeDemoBackend(){
+  const KEY = "sejong-cal-demo", AKEY = "sejong-cal-demo-admin";
+  let admin = false, cb = null;
+  const get = () => { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch(e){ return null; } };
+  window.addEventListener("storage", e => { if (e.key === KEY && cb) cb(get()); });
+  return {
+    async init(){},
+    subscribe(fn){ cb = fn; fn(get()); },
+    onConnection(fn){ fn(true); },
+    async write(blob){ localStorage.setItem(KEY, JSON.stringify(blob)); },
+    isAdmin: () => admin,
+    async setupAdmin(pw){ localStorage.setItem(AKEY, JSON.stringify(await hashPw(pw))); admin = true; },
+    async login(pw){
+      const rec = JSON.parse(localStorage.getItem(AKEY) || "null");
+      if (!rec) throw new Error("no-admin");
+      const h = await hashPw(pw, rec.salt);
+      if (h.hash !== rec.hash) throw new Error("wrong");
+      admin = true;
+    },
+    async logout(){ admin = false; },
+    async changeAdminPw(oldPw, newPw){ await this.login(oldPw); localStorage.setItem(AKEY, JSON.stringify(await hashPw(newPw))); }
+  };
+}
+async function makeFirebaseBackend(){
+  const V = "10.12.2";
+  const appM = await import(`https://www.gstatic.com/firebasejs/${V}/firebase-app.js`);
+  const dbM = await import(`https://www.gstatic.com/firebasejs/${V}/firebase-database.js`);
+  const auM = await import(`https://www.gstatic.com/firebasejs/${V}/firebase-auth.js`);
+  const app = appM.initializeApp(CFG.firebase);
+  const db = dbM.getDatabase(app);
+  const auth = auM.getAuth(app);
+  if (window.CAL_EMULATOR) {
+    dbM.connectDatabaseEmulator(db, "127.0.0.1", 9000);
+    auM.connectAuthEmulator(auth, "http://127.0.0.1:9099", {disableWarnings:true});
+  }
+  const node = dbM.ref(db, CFG.dbPath + "/data");
+  let user = null;
+  await new Promise(res => { const off = auM.onAuthStateChanged(auth, u => { user = u; off(); res(); }); });
+  auM.onAuthStateChanged(auth, u => { user = u; });
+  const isAdm = () => !!(user && user.email && user.email.toLowerCase() === CFG.adminEmail.toLowerCase());
+  return {
+    subscribe(fn){ dbM.onValue(node, s => fn(s.val()), () => fn(undefined)); },
+    onConnection(fn){ dbM.onValue(dbM.ref(db, ".info/connected"), s => fn(!!s.val())); },
+    write(blob){ return dbM.set(node, blob); },
+    isAdmin: isAdm,
+    async setupAdmin(pw){ await this.login(pw); },
+    async login(pw){
+      await auM.setPersistence(auth, auM.browserSessionPersistence);
+      const c = await auM.signInWithEmailAndPassword(auth, CFG.adminEmail, pw);
+      user = c.user;
+      if (!isAdm()) { await auM.signOut(auth); throw new Error("not-admin"); }
+    },
+    async logout(){ await auM.signOut(auth); user = null; },
+    async changeAdminPw(oldPw, newPw){
+      const cred = auM.EmailAuthProvider.credential(CFG.adminEmail, oldPw);
+      await auM.reauthenticateWithCredential(auth.currentUser, cred);
+      await auM.updatePassword(auth.currentUser, newPw);
+    }
+  };
+}
+
+/* ---------------- 상태 ---------------- */
+let B = null;               // 저장소
+let data = null;            // 풀린 일정
+let key = null, salt = null;
+let lastBlob = null;        // 마지막으로 받은 암호문
+let mySavedAt = 0;
+let dirty = false, saving = false, online = true, saveTimer = null;
+const nowD = new Date();
+let view = {y: nowD.getFullYear(), m: nowD.getMonth() + 1};
+const REM = "sejong-cal-viewpw";
+
+function show(id){ ["loading","setup","lock","app"].forEach(x => $(x).classList.toggle("hidden", x !== id)); }
+function toast(msg){ const t=document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(), 3500); }
+function lsGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+function lsSet(k,v){ try { v==null ? localStorage.removeItem(k) : localStorage.setItem(k,v); } catch(e){} }
+
+/* ---------------- 시작 ---------------- */
+(async function start(){
+  if (!window.crypto || !crypto.subtle) { $("loading").querySelector("p").textContent = "이 브라우저에서는 열 수 없습니다. 크롬·엣지·사파리 최신 버전으로 열어주세요. (주소가 https:// 로 시작해야 합니다)"; return; }
+  try { B = DEMO ? makeDemoBackend() : await makeFirebaseBackend(); }
+  catch(e){ $("loading").querySelector("p").textContent = "서버에 연결하지 못했습니다. 인터넷 연결을 확인하고 새로고침해 주세요."; return; }
+  if (DEMO) { $("demoNote1").classList.remove("hidden"); $("demoNote2").classList.remove("hidden"); }
+  let first = true;
+  B.onConnection(c => { online = c; paintSave(); });
+  B.subscribe(async blob => {
+    if (blob === undefined) { if (first) { $("loading").querySelector("p").textContent = "일정을 읽지 못했습니다. 잠시 후 새로고침해 주세요."; } return; }
+    lastBlob = blob;
+    if (first) {
+      first = false;
+      if (!blob) { enterSetup(); return; }
+      const rem = lsGet(REM);
+      if (rem && await tryUnlock(rem, true)) return;
+      show("lock"); $("viewPw").focus();
+      return;
+    }
+    // 실시간 갱신: 내가 방금 저장한 것이면 무시
+    if (!blob || !key) return;
+    if (blob.savedAt === mySavedAt) return;
+    if (dirty && B.isAdmin()) { toast("다른 곳에서 일정이 바뀌었습니다. 지금 수정 중인 내용을 저장하면 덮어씁니다."); return; }
+    try {
+      if (blob.salt !== b64(salt)) throw new Error("salt");
+      data = await decryptWith(key, blob); render();
+    } catch(e){
+      key = null; data = null; lsSet(REM, null);
+      $("lockMsg").textContent = "열람 암호가 바뀌었습니다. 새 암호를 입력하세요.";
+      show("lock");
+    }
+  });
+})();
+
+/* ---------------- 처음 설정 ---------------- */
+function enterSetup(){
+  if (DEMO) { $("suAdminLbl").textContent = "관리자 암호 정하기"; $("suAdmin2Wrap").classList.remove("hidden"); }
+  else { $("suAdminLbl").textContent = "관리자 암호 (Firebase에 만든 관리자 계정 암호)"; }
+  show("setup"); $("suAdmin").focus();
+}
+$("setupForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const a=$("suAdmin").value, a2=$("suAdmin2").value, v=$("suView").value, v2=$("suView2").value, err=$("suErr");
+  err.textContent = "";
+  if (a.length < 6) { err.textContent = "관리자 암호는 6자 이상이어야 합니다."; return; }
+  if (DEMO && a !== a2) { err.textContent = "관리자 암호 두 개가 서로 다릅니다."; return; }
+  if (v.length < 4) { err.textContent = "열람 암호는 4자 이상으로 정해주세요."; return; }
+  if (v !== v2) { err.textContent = "열람 암호 두 개가 서로 다릅니다."; return; }
+  let seed = {days:{}, weeks:{}, memo:{}, motto:"사명 완수의 해"};
+  const f = $("suSeed").files[0];
+  if (f) { try { seed = normalize(JSON.parse(await f.text())); } catch(x){ err.textContent = "불러온 파일을 읽을 수 없습니다."; return; } }
+  $("suBtn").disabled = true; $("suBtn").textContent = "설정 중…";
+  try {
+    await B.setupAdmin(a);
+    salt = crypto.getRandomValues(new Uint8Array(16));
+    key = await deriveKey(v, salt);
+    data = seed;
+    await saveNow();
+    openApp();
+  } catch(x){
+    err.textContent = x && String(x.code||x.message).includes("auth") ? "관리자 암호가 맞지 않거나 관리자 계정이 없습니다." : "설정하지 못했습니다: " + (x.code || x.message);
+  }
+  $("suBtn").disabled = false; $("suBtn").textContent = "설정하고 시작";
+});
+function normalize(d){
+  const n={days:d.days||{}, weeks:d.weeks||{}, memo:d.memo||{}, motto:d.motto!=null?d.motto:"사명 완수의 해"};
+  dedupe(n); return n;
+}
+// 같은 날짜에 똑같이 두 번 이상 들어간 일정 정리
+let dupRemoved = 0;
+function dedupe(n){
+  let removed=0;
+  Object.keys(n.days).forEach(k => {
+    const seen=new Set(), out=[];
+    (n.days[k]||[]).forEach(it => { const sig=[it.k,it.dept||"",it.title,it.meta||""].join("|"); if (seen.has(sig)) removed++; else { seen.add(sig); out.push(it); } });
+    if (out.length) n.days[k]=out; else delete n.days[k];
+  });
+  dupRemoved += removed; return removed;
+}
+
+/* ---------------- 열람 암호 ---------------- */
+async function tryUnlock(pw, silent){
+  try {
+    const s = unb64(lastBlob.salt), k = await deriveKey(pw, s);
+    const d = await decryptWith(k, lastBlob);
+    key = k; salt = s; data = normalize(d); openApp(); return true;
+  } catch(e){
+    if (!silent) $("lockErr").textContent = "암호가 맞지 않습니다.";
+    lsSet(REM, null); return false;
+  }
+}
+$("lockForm").addEventListener("submit", async e => {
+  e.preventDefault(); $("lockErr").textContent = "";
+  if (!lastBlob) { $("lockErr").textContent = "아직 등록된 일정이 없습니다."; return; }
+  const pw = $("viewPw").value;
+  $("lockBtn").disabled = true; $("lockBtn").textContent = "확인 중…";
+  const ok = await tryUnlock(pw);
+  if (ok && $("remember").checked) lsSet(REM, pw);
+  $("lockBtn").disabled = false; $("lockBtn").textContent = "열기";
+});
+function openApp(){ $("viewPw").value=""; show("app"); applyMode(); render(); }
+$("lockBtn2").onclick = async () => {
+  if (dirty && !confirm("저장하지 않은 수정이 있습니다. 그래도 잠글까요?")) return;
+  if (B.isAdmin()) await B.logout();
+  lsSet(REM, null); key=null; data=null; dirty=false;
+  $("cal").innerHTML=""; $("lockMsg").textContent="열람 암호를 입력하세요."; show("lock"); $("viewPw").focus();
+};
+
+/* ---------------- 관리자 ---------------- */
+function applyMode(){
+  const adm = B.isAdmin();
+  document.body.classList.toggle("admin", adm);
+  $("adminbar").classList.toggle("hidden", !adm);
+  $("adminBtn").classList.toggle("hidden", adm);
+  paintSave();
+}
+$("adminBtn").onclick = () => openModal(b => {
+  b.appendChild(h2("관리자 로그인"));
+  const p = pwInput(); b.appendChild(field("관리자 암호", p));
+  const er = errDiv(); b.appendChild(er);
+  const go = btn("로그인","primary", async () => {
+    go.disabled = true; er.textContent = "";
+    try {
+      await B.login(p.value); closeModal(); applyMode(); render();
+      const r = dedupe(data) + dupRemoved; dupRemoved = 0;
+      if (r) { changed(); toast("중복으로 들어간 일정 " + r + "개를 정리했습니다."); }
+      else toast("관리자 모드입니다. 날짜 칸을 눌러 일정을 추가하세요.");
+    }
+    catch(x){ er.textContent = "관리자 암호가 맞지 않습니다."; }
+    go.disabled = false;
+  });
+  b.appendChild(row([sp(), btn("취소","",closeModal), go]));
+  enterSubmits(b, go);
+});
+$("logoutBtn").onclick = async () => {
+  if (dirty) await saveNow();
+  await B.logout(); applyMode(); render(); toast("관리자 모드를 끝냈습니다.");
+};
+
+/* ---------------- 저장 ---------------- */
+function paintSave(){
+  const st = $("saveState"); if (!st) return;
+  st.classList.remove("warn");
+  if (!online) { st.textContent = "인터넷 연결 끊김 — 연결되면 자동 저장"; st.classList.add("warn"); }
+  else if (saving) st.textContent = "저장 중…";
+  else if (dirty) st.textContent = "수정됨 · 곧 자동 저장";
+  else st.textContent = "✓ 저장됨" + (mySavedAt ? " " + new Date(mySavedAt).toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"}) : "");
+}
+function changed(){
+  dirty = true; paintSave(); render();
+  clearTimeout(saveTimer); saveTimer = setTimeout(saveNow, 1200);
+}
+async function saveNow(){
+  clearTimeout(saveTimer);
+  if (!B.isAdmin() && !DEMO) { toast("관리자만 저장할 수 있습니다."); return; }
+  saving = true; paintSave();
+  try {
+    const blob = await encryptWith(key, salt, data);
+    mySavedAt = blob.savedAt; lastBlob = blob;
+    await B.write(blob);
+    dirty = false;
+  } catch(e){
+    toast("저장하지 못했습니다. 관리자 로그인이 풀렸거나 연결이 끊겼을 수 있습니다.");
+  }
+  saving = false; paintSave();
+}
+$("saveBtn").onclick = async () => { await saveNow(); if (!dirty) toast("저장했습니다."); };
+window.addEventListener("beforeunload", e => { if (dirty) { e.preventDefault(); e.returnValue = ""; } });
+document.addEventListener("visibilitychange", () => { if (document.hidden && dirty) saveNow(); });
+
+/* ---------------- 백업 ---------------- */
+$("backupBtn").onclick = () => {
+  const t = new Date(), pad2 = n => String(n).padStart(2,"0");
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], {type:"application/json"}));
+  const a = document.createElement("a"); a.href = url; a.download = `세종교회_일정백업_${t.getFullYear()}${pad2(t.getMonth()+1)}${pad2(t.getDate())}.json`;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+  toast("백업 파일은 암호가 없으니 안전한 곳에 보관하세요.");
+};
+$("restoreBtn").onclick = () => $("restoreFile").click();
+$("restoreFile").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  try {
+    const d = normalize(JSON.parse(await f.text()));
+    if (!confirm("백업 파일로 지금 일정을 모두 바꿀까요?")) return;
+    data = d; changed(); await saveNow(); toast("백업을 불러왔습니다.");
+  } catch(x){ toast("백업 파일을 읽을 수 없습니다."); }
+};
+
+/* ---------------- 암호 변경 ---------------- */
+$("viewPwBtn").onclick = () => openModal(b => {
+  b.appendChild(h2("열람 암호 변경"));
+  b.appendChild(el("p", null, "바꾸면 기존 암호로 보던 사람들은 새 암호를 입력해야 합니다."));
+  const a = pwInput(), c = pwInput(); const er = errDiv();
+  b.appendChild(field("새 열람 암호", a)); b.appendChild(field("새 열람 암호 확인", c)); b.appendChild(er);
+  const go = btn("변경","primary", async () => {
+    if (a.value.length < 4) { er.textContent = "4자 이상으로 정해주세요."; return; }
+    if (a.value !== c.value) { er.textContent = "두 암호가 서로 다릅니다."; return; }
+    go.disabled = true;
+    salt = crypto.getRandomValues(new Uint8Array(16)); key = await deriveKey(a.value, salt);
+    if (lsGet(REM)) lsSet(REM, a.value);
+    await saveNow(); closeModal(); toast("열람 암호를 바꿨습니다. 공유한 분들께 새 암호를 알려주세요.");
+  });
+  b.appendChild(row([sp(), btn("취소","",closeModal), go])); enterSubmits(b, go);
+});
+$("adminPwBtn").onclick = () => openModal(b => {
+  b.appendChild(h2("관리자 암호 변경"));
+  const o = pwInput(), a = pwInput(), c = pwInput(); const er = errDiv();
+  b.appendChild(field("지금 관리자 암호", o)); b.appendChild(field("새 관리자 암호 (6자 이상)", a)); b.appendChild(field("새 관리자 암호 확인", c)); b.appendChild(er);
+  const go = btn("변경","primary", async () => {
+    if (a.value.length < 6) { er.textContent = "6자 이상으로 정해주세요."; return; }
+    if (a.value !== c.value) { er.textContent = "두 암호가 서로 다릅니다."; return; }
+    go.disabled = true;
+    try { await B.changeAdminPw(o.value, a.value); closeModal(); toast("관리자 암호를 바꿨습니다."); }
+    catch(x){ er.textContent = "지금 관리자 암호가 맞지 않습니다."; }
+    go.disabled = false;
+  });
+  b.appendChild(row([sp(), btn("취소","",closeModal), go])); enterSubmits(b, go);
+});
+
+/* ---------------- 달력 그리기 ---------------- */
+const pad = n => (n<10?"0":"")+n;
+const iso = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+function el(tag, cls, text){ const e=document.createElement(tag); if (cls) e.className=cls; if (text!=null) e.textContent=text; return e; }
+function holidaysOf(d){
+  const k = iso(d), out = [];
+  const f = FIXED[pad(d.getMonth()+1)+"-"+pad(d.getDate())]; if (f) out.push(f);
+  if (LUNAR[k] && !out.includes(LUNAR[k])) out.push(LUNAR[k]);
+  (data.days[k]||[]).forEach(it => { if (it.k==="holiday" && !out.includes(it.title)) out.push(it.title); });
+  return out;
+}
+function render(){
+  if (!data) return;
+  const adm = B.isAdmin(), y=view.y, m=view.m, todayIso=iso(new Date());
+  $("eyebrow").textContent = "신"+(y-1983)+"년 "+(data.motto||"")+" · 세종교회";
+  $("mTitle").textContent = m+"월"; $("yTitle").textContent = "교회 일정 · "+y;
+  document.title = "세종교회 "+y+"년 "+m+"월 일정";
+  const lg=$("legend"); lg.innerHTML="";
+  ["edu","evang","assembly","tribe","church"].forEach(k => {
+    const s=el("span"), i=el("i"); i.style.background=KINDS[k].bg; i.style.borderColor=KINDS[k].dot;
+    s.appendChild(i); s.appendChild(document.createTextNode(KINDS[k].name+" 일정")); lg.appendChild(s);
+  });
+  const ds=el("span"), db=el("b",null,"부서명"); db.style.color="#0F6E66"; ds.appendChild(db); ds.appendChild(document.createTextNode(" 부서별 행사")); lg.appendChild(ds);
+  if (adm) lg.appendChild(el("span","hint","날짜 칸을 누르면 일정 추가 · 일정을 누르면 수정"));
+
+  const cal=$("cal"); cal.innerHTML="";
+  const head=el("div","grid dowrow");
+  WD.forEach((n,i) => head.appendChild(el("div","dow"+(i===0?" sun":i===6?" sat":""),n)));
+  cal.appendChild(head);
+  const first=new Date(y,m-1,1), last=new Date(y,m,0), d=new Date(y,m-1,1-first.getDay());
+  let wn=1;
+  while (d<=last){
+    const wkIso=iso(d), th=data.weeks[wkIso]||["",""];
+    const week=el("div","week"), wk=el("div","wk");
+    wk.appendChild(el("span","no",wn+"주"));
+    if (th[0] || adm) wk.appendChild(el("span","th"+(th[0]?"":" empty"), th[0]||"주간 테마 입력"));
+    if (th[1]) wk.appendChild(el("span","sb","· "+th[1]));
+    if (adm) wk.addEventListener("click", () => editWeek(wkIso));
+    week.appendChild(wk);
+    const g=el("div","grid");
+    for (let i=0;i<7;i++){ g.appendChild(cellFor(new Date(d), i, m, todayIso, adm)); d.setDate(d.getDate()+1); }
+    week.appendChild(g); cal.appendChild(week); wn++;
+  }
+  const mk=y+"-"+pad(m), memo=$("memo"); memo.innerHTML="";
+  if (data.memo[mk] || adm){
+    memo.appendChild(el("b",null,"기타 메모"));
+    memo.appendChild(document.createTextNode(data.memo[mk]||"(누르면 메모를 쓸 수 있습니다)"));
+  }
+  memo.onclick = adm ? () => editMemo(mk) : null;
+}
+function cellFor(d, col, m, todayIso, adm){
+  const k=iso(d), out=d.getMonth()!==m-1, hol=holidaysOf(d), items=(data.days[k]||[]).map((it,idx)=>({it,idx}));
+  const sp_=items.filter(x=>x.it.k!=="dept"&&x.it.k!=="holiday"), rt=items.filter(x=>x.it.k==="dept");
+  const c=el("div","cell"+(out?" out":"")+(k===todayIso?" today":"")+(!sp_.length&&!rt.length&&!hol.length?" empty":""));
+  const dh=el("div","dh");
+  const numCls = out?"out":(col===0||hol.length?"red":(col===6?"blue":""));
+  dh.appendChild(el("span","num "+numCls, out?(d.getMonth()+1)+"/"+d.getDate():String(d.getDate())));
+  dh.appendChild(el("span","wd",WD[col]+"요일"));
+  hol.forEach(h => {
+    const s=el("span","hol",h); dh.appendChild(s);
+    if (adm){
+      const idx=(data.days[k]||[]).findIndex(it=>it.k==="holiday"&&it.title===h);
+      if (idx>=0){ s.style.cursor="pointer"; s.addEventListener("click", e=>{ e.stopPropagation(); editItem(k, idx); }); }
+    }
+  });
+  c.appendChild(dh);
+  sp_.forEach(x => {
+    const K=KINDS[x.it.k]||KINDS.edu, ch=el("div","chip"); ch.style.background=K.bg;
+    const dot=el("span","dot"); dot.style.background=K.dot; ch.appendChild(dot);
+    const box=el("div"), t=el("div","t",x.it.title); t.style.color=K.fg; box.appendChild(t);
+    if (x.it.meta){ const mm=el("div","m",x.it.meta); mm.style.color=K.fg; box.appendChild(mm); }
+    ch.appendChild(box);
+    if (adm) ch.addEventListener("click", e=>{ e.stopPropagation(); editItem(k, x.idx); });
+    c.appendChild(ch);
+  });
+  if (sp_.length && rt.length) c.appendChild(el("div","sep"));
+  rt.forEach(x => {
+    const r=el("div","dept"), t=el("div","t");
+    t.appendChild(el("b",null,x.it.dept||"")); t.appendChild(document.createTextNode(" "+x.it.title));
+    r.appendChild(t); if (x.it.meta) r.appendChild(el("div","m",x.it.meta));
+    if (adm) r.addEventListener("click", e=>{ e.stopPropagation(); editItem(k, x.idx); });
+    c.appendChild(r);
+  });
+  if (!out) c.appendChild(el("div","add","+ 일정 추가"));
+  if (adm) c.addEventListener("click", () => editItem(k, -1));
+  return c;
+}
+
+/* ---------------- 입력 창 ---------------- */
+function openModal(build){
+  // 매번 새 상자로 바꿔서 이전 입력창의 Enter 동작이 남지 않게 함
+  const old=$("mbox"), b=old.cloneNode(false); old.replaceWith(b); build(b); $("modal").classList.remove("hidden"); const f=b.querySelector("input,textarea"); if (f) f.focus(); }
+function closeModal(){ $("modal").classList.add("hidden"); }
+$("modal").addEventListener("click", e => { if (e.target.id==="modal") closeModal(); });
+document.addEventListener("keydown", e => { if (e.key==="Escape" && !$("modal").classList.contains("hidden")) closeModal(); });
+const h2 = t => el("h2", null, t);
+const sp = () => el("span","sp");
+const errDiv = () => { const e=el("div","err"); return e; };
+function field(label, input){ const l=el("label",null,label); l.appendChild(input); return l; }
+function inp(v, ph){ const i=el("input"); i.type="text"; i.value=v||""; if (ph) i.placeholder=ph; return i; }
+function pwInput(){ const i=el("input"); i.type="password"; return i; }
+function row(btns){ const r=el("div","mrow"); btns.forEach(b=>r.appendChild(b)); return r; }
+function btn(text, cls, fn){
+  const b=el("button","btn "+(cls||""),text); b.type="button";
+  b.addEventListener("click", e => { if (!b.isConnected || b.dataset.busy) return; if (cls==="primary"||cls==="danger") { b.dataset.busy="1"; setTimeout(()=>{ delete b.dataset.busy; }, 800); } fn(e); });
+  return b;
+}
+function enterSubmits(b, go){ b.addEventListener("keydown", e => { if (e.key==="Enter" && e.target.tagName==="INPUT"){ e.preventDefault(); go.click(); } }); }
+
+function editItem(dateKey, idx){
+  const list=data.days[dateKey]||[], it=idx>=0?list[idx]:{k:"edu",title:"",meta:"",dept:""};
+  let kind=it.k;
+  openModal(b => {
+    const dd=dateKey.split("-");
+    b.appendChild(h2((+dd[1])+"월 "+(+dd[2])+"일 · "+(idx>=0?"일정 수정":"일정 추가")));
+    const kw=el("div","kinds");
+    Object.keys(KINDS).forEach(k => {
+      const kb=el("button",k===kind?"on":"",KINDS[k].name); kb.type="button";
+      kb.style.background=KINDS[k].bg; kb.style.color=KINDS[k].fg;
+      if (k==="holiday") kb.style.boxShadow="inset 0 0 0 1px #E4E1D9";
+      kb.addEventListener("click", () => { kind=k; kw.querySelectorAll("button").forEach(x=>x.classList.remove("on")); kb.classList.add("on"); sync(); });
+      kw.appendChild(kb);
+    });
+    b.appendChild(field("종류", kw));
+    const deptI=inp(it.dept,"예: 장년회"), titleI=inp(it.title,"예: 교회전도단"), metaI=inp(it.meta,"예: 09:10 · 교육관");
+    const dF=field("부서명", deptI), tF=field("내용", titleI), mF=field("시간 · 장소 (선택)", metaI);
+    b.appendChild(dF); b.appendChild(tF); b.appendChild(mF);
+    function sync(){ dF.classList.toggle("hidden", kind!=="dept"); mF.classList.toggle("hidden", kind==="holiday"); tF.firstChild.textContent = kind==="holiday"?"빨간 날 이름":"내용"; }
+    sync();
+    const btns=[];
+    if (idx>=0) btns.push(btn("삭제","danger",() => { list.splice(idx,1); if (!list.length) delete data.days[dateKey]; closeModal(); changed(); }));
+    btns.push(sp()); btns.push(btn("취소","",closeModal));
+    const go=btn("확인","primary",() => {
+      const t=titleI.value.trim(); if (!t){ titleI.focus(); return; }
+      const n={k:kind, title:t, meta:kind==="holiday"?"":metaI.value.trim(), dept:kind==="dept"?deptI.value.trim():""};
+      if (!data.days[dateKey]) data.days[dateKey]=list;
+      if (idx>=0) list[idx]=n; else list.push(n);
+      closeModal(); changed();
+    });
+    btns.push(go); b.appendChild(row(btns)); enterSubmits(b, go);
+  });
+}
+function editWeek(wkIso){
+  const th=data.weeks[wkIso]||["",""];
+  openModal(b => {
+    b.appendChild(h2("주간 테마"));
+    const a=inp(th[0],"예: 9월 개강 세미나 주간"), s=inp(th[1],"예: 수강생 다지기 주간");
+    b.appendChild(field("테마", a)); b.appendChild(field("보조 설명 (선택)", s));
+    const go=btn("확인","primary",() => {
+      if (a.value.trim()||s.value.trim()) data.weeks[wkIso]=[a.value.trim(), s.value.trim()]; else delete data.weeks[wkIso];
+      closeModal(); changed();
+    });
+    b.appendChild(row([sp(), btn("취소","",closeModal), go])); enterSubmits(b, go);
+  });
+}
+function editMemo(mk){
+  openModal(b => {
+    b.appendChild(h2("기타 메모 · 표어"));
+    const t=el("textarea"); t.rows=4; t.value=data.memo[mk]||"";
+    b.appendChild(field("이 달 메모 (날짜 미정 일정 등)", t));
+    const mo=inp(data.motto,"예: 사명 완수의 해");
+    b.appendChild(field("올해 표어 (맨 위 초록 글씨)", mo));
+    b.appendChild(row([sp(), btn("취소","",closeModal), btn("확인","primary",() => {
+      if (t.value.trim()) data.memo[mk]=t.value.trim(); else delete data.memo[mk];
+      data.motto=mo.value.trim(); closeModal(); changed();
+    })]));
+  });
+}
+
+$("prev").onclick=()=>{ view.m--; if (view.m<1){ view.m=12; view.y--; } render(); };
+$("next").onclick=()=>{ view.m++; if (view.m>12){ view.m=1; view.y++; } render(); };
+$("today").onclick=()=>{ const n=new Date(); view={y:n.getFullYear(), m:n.getMonth()+1}; render(); };
+$("print").onclick=()=>window.print();
+</script>
+</body>
+</html>
