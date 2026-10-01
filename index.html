@@ -78,7 +78,12 @@ button,input,select,textarea{font:inherit}
 .admin .dept,.admin .chip{cursor:pointer}
 .admin .dept:hover,.admin .chip:hover{outline:2px solid rgba(28,31,38,.15)}
 .dept .t{font-size:13px;line-height:1.35}
-.dept .t b{color:#0F6E66}
+.dept .t b{font-size:12px;font-weight:700;padding:1px 6px;border-radius:5px;margin-right:2px;background:#E0F2F0;color:#0F6E66}
+.dept.jj .t b{background:#FBE7F0;color:#8E2A5C}
+.rep{font-size:12px;color:var(--mute);margin-left:4px;white-space:nowrap}
+.mbox .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mbox .note{font-size:12px;color:var(--mute);font-weight:400;line-height:1.5}
+.mbox .chkrow{flex-direction:row;align-items:center;gap:8px;font-weight:400}
 .dept .m{font-size:11.5px;color:var(--mute)}
 .sep{height:1px;background:#ECEAE4;margin:1px 0}
 .add{display:none;font-size:12px;color:var(--faint);margin-top:auto;padding-top:2px}
@@ -186,6 +191,7 @@ window.CAL_CONFIG = {
     <button class="btn save" id="saveBtn">저장</button>
     <button class="btn" id="backupBtn">백업 받기</button>
     <button class="btn" id="restoreBtn">백업 불러오기</button>
+    <button class="btn" id="deptBtn">부서 목록</button>
     <button class="btn" id="viewPwBtn">열람 암호 변경</button>
     <button class="btn" id="adminPwBtn">관리자 암호 변경</button>
     <button class="btn" id="logoutBtn">관리자 나가기</button>
@@ -234,6 +240,10 @@ const KINDS = {
 const FIXED = {"01-01":"신정","03-01":"삼일절","05-05":"어린이날","06-06":"현충일","08-15":"광복절","10-03":"개천절","10-09":"한글날","12-25":"성탄절"};
 const LUNAR = {"2026-02-16":"설날 연휴","2026-02-17":"설날","2026-02-18":"설날 연휴","2026-03-02":"대체공휴일","2026-05-24":"부처님오신날","2026-05-25":"대체공휴일","2026-06-03":"지방선거일","2026-08-17":"대체공휴일","2026-09-24":"추석 연휴","2026-09-25":"추석","2026-09-26":"추석 연휴","2026-10-05":"대체공휴일"};
 const WD = ["일","월","화","수","목","금","토"];
+const DEF_JJ = ["자문회","장년회","부녀회","청년회","학생회","유년회"];
+const DEF_D24 = ["총무부","행정서무부","내무부","기획부","재정부","교육부","신학부","해외선교부","전도부","문화부","출판부","정보통신부","찬양부","섭외부","국내선교부","홍보부","법무부","건설부","체육부","사업부","보건후생복지부","봉사교통부"];
+const deptLists = () => (data && data.depts) || {jj:DEF_JJ, d24:DEF_D24};
+const isJJ = name => deptLists().jj.includes((name||"").trim());
 
 /* ---------------- 암호화 (열람 암호로 AES-GCM) ---------------- */
 const te = new TextEncoder(), td = new TextDecoder();
@@ -333,7 +343,7 @@ let view = {y: nowD.getFullYear(), m: nowD.getMonth() + 1};
 const REM = "sejong-cal-viewpw";
 
 function show(id){ ["loading","setup","lock","app"].forEach(x => $(x).classList.toggle("hidden", x !== id)); }
-function toast(msg){ const t=document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(), 3500); }
+function toast(msg){ document.querySelectorAll(".toast").forEach(x=>x.remove()); const t=document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(), 3500); }
 function lsGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
 function lsSet(k,v){ try { v==null ? localStorage.removeItem(k) : localStorage.setItem(k,v); } catch(e){} }
 
@@ -403,6 +413,7 @@ $("setupForm").addEventListener("submit", async e => {
 });
 function normalize(d){
   const n={days:d.days||{}, weeks:d.weeks||{}, memo:d.memo||{}, motto:d.motto!=null?d.motto:"사명 완수의 해"};
+  if (d.depts && Array.isArray(d.depts.jj) && Array.isArray(d.depts.d24)) n.depts=d.depts;
   dedupe(n); return n;
 }
 // 같은 날짜에 똑같이 두 번 이상 들어간 일정 정리
@@ -578,7 +589,10 @@ function render(){
     const s=el("span"), i=el("i"); i.style.background=KINDS[k].bg; i.style.borderColor=KINDS[k].dot;
     s.appendChild(i); s.appendChild(document.createTextNode(KINDS[k].name+" 일정")); lg.appendChild(s);
   });
-  const ds=el("span"), db=el("b",null,"부서명"); db.style.color="#0F6E66"; ds.appendChild(db); ds.appendChild(document.createTextNode(" 부서별 행사")); lg.appendChild(ds);
+  [["자장부청","#FBE7F0","#8E2A5C"],["24부서","#E0F2F0","#0F6E66"]].forEach(([nm,bg,fg]) => {
+    const ds=el("span"), db=el("b",null,"부서명"); db.style.cssText="font-size:12px;padding:1px 6px;border-radius:5px;background:"+bg+";color:"+fg;
+    ds.appendChild(db); ds.appendChild(document.createTextNode(" "+nm+" 행사")); lg.appendChild(ds);
+  });
   if (adm) lg.appendChild(el("span","hint","날짜 칸을 누르면 일정 추가 · 일정을 누르면 수정"));
 
   const cal=$("cal"); cal.innerHTML="";
@@ -626,6 +640,7 @@ function cellFor(d, col, m, todayIso, adm){
     const K=KINDS[x.it.k]||KINDS.edu, ch=el("div","chip"); ch.style.background=K.bg;
     const dot=el("span","dot"); dot.style.background=K.dot; ch.appendChild(dot);
     const box=el("div"), t=el("div","t",x.it.title); t.style.color=K.fg; box.appendChild(t);
+    if (adm && x.it.sid) t.appendChild(el("span","rep","↻"));
     if (x.it.meta){ const mm=el("div","m",x.it.meta); mm.style.color=K.fg; box.appendChild(mm); }
     ch.appendChild(box);
     if (adm) ch.addEventListener("click", e=>{ e.stopPropagation(); editItem(k, x.idx); });
@@ -633,8 +648,9 @@ function cellFor(d, col, m, todayIso, adm){
   });
   if (sp_.length && rt.length) c.appendChild(el("div","sep"));
   rt.forEach(x => {
-    const r=el("div","dept"), t=el("div","t");
+    const r=el("div","dept"+(isJJ(x.it.dept)?" jj":"")), t=el("div","t");
     t.appendChild(el("b",null,x.it.dept||"")); t.appendChild(document.createTextNode(" "+x.it.title));
+    if (adm && x.it.sid) t.appendChild(el("span","rep","↻"));
     r.appendChild(t); if (x.it.meta) r.appendChild(el("div","m",x.it.meta));
     if (adm) r.addEventListener("click", e=>{ e.stopPropagation(); editItem(k, x.idx); });
     c.appendChild(r);
@@ -665,12 +681,40 @@ function btn(text, cls, fn){
 }
 function enterSubmits(b, go){ b.addEventListener("keydown", e => { if (e.key==="Enter" && e.target.tagName==="INPUT"){ e.preventDefault(); go.click(); } }); }
 
+function monthEnd(dateKey){ const [y,m]=dateKey.split("-").map(Number); return iso(new Date(y, m, 0)); }
+function addDays(dateKey, n){ const [y,m,d]=dateKey.split("-").map(Number); return iso(new Date(y, m-1, d+n)); }
+// 같은 반복 묶음(sid) 중 fromKey 이후 일정마다 fn 실행
+function eachInSeries(sid, fromKey, fn){
+  Object.keys(data.days).sort().forEach(k => {
+    if (k < fromKey) return;
+    const list=data.days[k];
+    for (let i=list.length-1;i>=0;i--) if (list[i].sid===sid) fn(list, i, k);
+    if (!list.length) delete data.days[k];
+  });
+}
+function deptSelect(cur){
+  const wrap=el("div"); wrap.style.cssText="display:flex;flex-direction:column;gap:6px";
+  const sel=el("select"), L=deptLists();
+  sel.appendChild(new Option("부서를 고르세요",""));
+  [["자장부청 · 학생 · 유년", L.jj],["24부서", L.d24]].forEach(([lab,arr]) => {
+    const og=document.createElement("optgroup"); og.label=lab; arr.forEach(n=>og.appendChild(new Option(n,n))); sel.appendChild(og);
+  });
+  sel.appendChild(new Option("직접 입력…","__custom"));
+  const txt=inp("", "부서명 직접 입력");
+  const known=L.jj.includes(cur)||L.d24.includes(cur);
+  if (!cur) sel.value=""; else if (known) sel.value=cur; else { sel.value="__custom"; txt.value=cur; }
+  const sync=()=>txt.classList.toggle("hidden", sel.value!=="__custom"); sync();
+  sel.addEventListener("change", ()=>{ sync(); if (sel.value==="__custom") txt.focus(); });
+  wrap.appendChild(sel); wrap.appendChild(txt);
+  wrap.getValue=()=> sel.value==="__custom" ? txt.value.trim() : sel.value;
+  return wrap;
+}
 function editItem(dateKey, idx){
   const list=data.days[dateKey]||[], it=idx>=0?list[idx]:{k:"edu",title:"",meta:"",dept:""};
   let kind=it.k;
+  const dd=dateKey.split("-"), wdName=WD[new Date(+dd[0], +dd[1]-1, +dd[2]).getDay()];
   openModal(b => {
-    const dd=dateKey.split("-");
-    b.appendChild(h2((+dd[1])+"월 "+(+dd[2])+"일 · "+(idx>=0?"일정 수정":"일정 추가")));
+    b.appendChild(h2((+dd[1])+"월 "+(+dd[2])+"일("+wdName+") · "+(idx>=0?"일정 수정":"일정 추가")));
     const kw=el("div","kinds");
     Object.keys(KINDS).forEach(k => {
       const kb=el("button",k===kind?"on":"",KINDS[k].name); kb.type="button";
@@ -680,22 +724,81 @@ function editItem(dateKey, idx){
       kw.appendChild(kb);
     });
     b.appendChild(field("종류", kw));
-    const deptI=inp(it.dept,"예: 장년회"), titleI=inp(it.title,"예: 교회전도단"), metaI=inp(it.meta,"예: 09:10 · 교육관");
-    const dF=field("부서명", deptI), tF=field("내용", titleI), mF=field("시간 · 장소 (선택)", metaI);
+    const deptS=deptSelect(it.dept||""), titleI=inp(it.title,"예: 교회전도단"), metaI=inp(it.meta,"예: 09:10 · 교육관");
+    const dF=field("부서명", deptS), tF=field("내용", titleI), mF=field("시간 · 장소 (선택)", metaI);
     b.appendChild(dF); b.appendChild(tF); b.appendChild(mF);
+
+    // 반복 (새 일정일 때)
+    let repSel=null, untilI=null, applyAll=null;
+    if (idx<0){
+      repSel=el("select");
+      [["none","반복 안 함"],["w1","매주 "+wdName+"요일"],["w2","격주 "+wdName+"요일 (2주마다)"]].forEach(([v,t])=>repSel.appendChild(new Option(t,v)));
+      untilI=el("input"); untilI.type="date"; untilI.value=monthEnd(dateKey); untilI.min=dateKey; untilI.max=addDays(dateKey, 366);
+      const two=el("div","two"); two.appendChild(field("반복", repSel)); const uF=field("반복 끝나는 날", untilI); two.appendChild(uF);
+      b.appendChild(two);
+      const syncRep=()=>uF.classList.toggle("hidden", repSel.value==="none"); syncRep();
+      repSel.addEventListener("change", syncRep);
+    } else if (it.sid){
+      const lab=el("label","chkrow"); applyAll=el("input"); applyAll.type="checkbox";
+      lab.appendChild(applyAll); lab.appendChild(document.createTextNode("이 날짜 이후의 같은 반복 일정에도 모두 적용"));
+      b.appendChild(lab);
+      b.appendChild(el("div","note","반복으로 넣은 일정입니다. 체크하지 않으면 이 날짜만 바뀝니다."));
+    }
     function sync(){ dF.classList.toggle("hidden", kind!=="dept"); mF.classList.toggle("hidden", kind==="holiday"); tF.firstChild.textContent = kind==="holiday"?"빨간 날 이름":"내용"; }
     sync();
     const btns=[];
-    if (idx>=0) btns.push(btn("삭제","danger",() => { list.splice(idx,1); if (!list.length) delete data.days[dateKey]; closeModal(); changed(); }));
+    if (idx>=0) btns.push(btn("삭제","danger",() => {
+      if (applyAll && applyAll.checked){
+        let n=0; eachInSeries(it.sid, dateKey, (l,i)=>{ l.splice(i,1); n++; });
+        closeModal(); changed(); toast(n+"개 날짜에서 삭제했습니다.");
+      } else { list.splice(idx,1); if (!list.length) delete data.days[dateKey]; closeModal(); changed(); }
+    }));
     btns.push(sp()); btns.push(btn("취소","",closeModal));
     const go=btn("확인","primary",() => {
       const t=titleI.value.trim(); if (!t){ titleI.focus(); return; }
-      const n={k:kind, title:t, meta:kind==="holiday"?"":metaI.value.trim(), dept:kind==="dept"?deptI.value.trim():""};
-      if (!data.days[dateKey]) data.days[dateKey]=list;
-      if (idx>=0) list[idx]=n; else list.push(n);
-      closeModal(); changed();
+      const dept=kind==="dept"?deptS.getValue():"";
+      if (kind==="dept" && !dept){ deptS.querySelector("select").focus(); return; }
+      const base={k:kind, title:t, meta:kind==="holiday"?"":metaI.value.trim(), dept};
+      if (idx>=0){
+        if (applyAll && applyAll.checked){
+          let n=0; eachInSeries(it.sid, dateKey, (l,i)=>{ l[i]=Object.assign({}, base, {sid:it.sid}); n++; });
+          closeModal(); changed(); toast(n+"개 날짜의 반복 일정을 바꿨습니다."); return;
+        }
+        list[idx]=it.sid ? Object.assign({}, base, {sid:it.sid}) : base;
+        closeModal(); changed(); return;
+      }
+      const rep=repSel?repSel.value:"none";
+      if (rep==="none"){
+        if (!data.days[dateKey]) data.days[dateKey]=list;
+        list.push(base); closeModal(); changed(); return;
+      }
+      const until=untilI.value||monthEnd(dateKey), step=rep==="w2"?14:7, sid="s"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+      let k=dateKey, n=0;
+      while (k<=until && n<60){
+        const l=data.days[k]||(data.days[k]=[]);
+        const sig=[base.k,base.dept,base.title,base.meta].join("|");
+        if (!l.some(x=>[x.k,x.dept||"",x.title,x.meta||""].join("|")===sig)) { l.push(Object.assign({}, base, {sid})); n++; }
+        k=addDays(k, step);
+      }
+      closeModal(); changed(); toast(n+"개 날짜에 반복 일정을 넣었습니다.");
     });
     btns.push(go); b.appendChild(row(btns)); enterSubmits(b, go);
+  });
+}
+function editDepts(){
+  const L=deptLists();
+  openModal(b => {
+    b.appendChild(h2("부서 목록"));
+    b.appendChild(el("div","note","한 줄에 하나씩 적으세요. 위쪽 목록의 부서는 분홍색, 아래쪽은 청록색으로 표시됩니다. 목록에 없는 부서명은 청록색으로 나옵니다."));
+    const a=el("textarea"); a.rows=6; a.value=L.jj.join("\n");
+    const c=el("textarea"); c.rows=10; c.value=L.d24.join("\n");
+    b.appendChild(field("자장부청 · 학생 · 유년 (분홍)", a)); b.appendChild(field("24부서 (청록)", c));
+    const parse=v=>[...new Set(v.split(/[\n,]/).map(x=>x.trim()).filter(Boolean))];
+    b.appendChild(row([
+      btn("기본값으로","",()=>{ a.value=DEF_JJ.join("\n"); c.value=DEF_D24.join("\n"); }),
+      sp(), btn("취소","",closeModal),
+      btn("확인","primary",()=>{ data.depts={jj:parse(a.value), d24:parse(c.value)}; closeModal(); changed(); })
+    ]));
   });
 }
 function editWeek(wkIso){
@@ -725,6 +828,7 @@ function editMemo(mk){
   });
 }
 
+$("deptBtn").onclick=editDepts;
 $("prev").onclick=()=>{ view.m--; if (view.m<1){ view.m=12; view.y--; } render(); };
 $("next").onclick=()=>{ view.m++; if (view.m>12){ view.m=1; view.y++; } render(); };
 $("today").onclick=()=>{ const n=new Date(); view={y:n.getFullYear(), m:n.getMonth()+1}; render(); };
