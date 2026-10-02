@@ -118,16 +118,51 @@ button,input,select,textarea{font:inherit}
   .wd{display:inline}
   .dh{gap:8px}
 }
+/* ===== 인쇄 전용 (가로, 진한 테두리·글씨) ===== */
+@page{size:A4 landscape;margin:8mm}
+body.pm{background:#fff}
+body.pm #app{width:1400px;max-width:none;padding:0;margin:0}
+body.pm .toolbar,body.pm .adminbar,body.pm .legend .hint,body.pm .add,body.pm .demo,body.pm .screen,body.pm #modal,body.pm .toast{display:none!important}
+body.pm .top{align-items:flex-end;margin-bottom:8px}
+body.pm .eyebrow{font-size:15px;color:#000;letter-spacing:.06em}
+body.pm .title h1{font-size:46px;color:#000}
+body.pm .title span{font-size:22px;color:#000}
+body.pm .slogan{font-size:14px;color:#000}
+body.pm .legend{background:#fff;border:1.5px solid #000;border-radius:0;padding:6px 12px;font-size:14px;color:#000;gap:16px}
+body.pm .legend i{border-width:2px}
+body.pm .cal{gap:0;margin-top:8px;border-top:2px solid #000;border-left:2px solid #000}
+body.pm .grid{grid-template-columns:1.5fr repeat(6,minmax(0,1fr))!important;gap:0}
+body.pm .dowrow{display:grid!important}
+body.pm .dow{border-bottom:none;border-right:1.5px solid #000;background:#E9E9E9;color:#000;font-size:16px;text-align:center;padding:5px 0}
+body.pm .dow.sun{color:#C00000}body.pm .dow.sat{color:#1F3F8F}
+body.pm .week{gap:0}
+body.pm .wk{border-right:2px solid #000;border-top:1.5px solid #000;border-bottom:1px solid #000;border-radius:0;padding:3px 8px;min-height:0;background:#F2F2F2}
+body.pm .wk .no{font-size:13px;background:#000}
+body.pm .wk .th{font-size:15px;color:#000}
+body.pm .wk .sb{font-size:15px;color:#000}
+body.pm .wk .th.empty{visibility:hidden}
+body.pm .cell{display:flex!important;min-height:78px;border-radius:0;border:none;border-right:1.5px solid #000;border-bottom:1px solid #000;padding:4px 6px 6px;gap:3px;background:#fff!important}
+body.pm .cell.today{border:none;border-right:1.5px solid #000;border-bottom:1px solid #000}
+body.pm .cell.out .num{color:#8A8A8A}
+body.pm .num{font-size:20px;color:#000}
+body.pm .num.red{color:#C00000}body.pm .num.blue{color:#1F3F8F}
+body.pm .wd{display:none!important}
+body.pm .hol{font-size:13px;color:#C00000}
+body.pm .chip{padding:2px 5px;border-radius:4px;border:1.2px solid currentColor;gap:5px}
+body.pm .chip .dot{width:6px;height:6px;margin-top:6px}
+body.pm .chip .t{font-size:14.5px;line-height:1.3}
+body.pm .chip .m{font-size:12.5px;opacity:1;font-weight:600}
+body.pm .dept .t{font-size:14px;line-height:1.3;color:#000}
+body.pm .dept .t b{font-size:13px;border:1px solid currentColor}
+body.pm .dept .m{font-size:12.5px;color:#222;font-weight:600}
+body.pm .sep{background:#999}
+body.pm .dept{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:6px}
+body.pm .bx{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:6px}
+body.pm .rep{display:none}
+body.pm .memo{font-size:14px;color:#000;margin-top:6px}
+body.pm .memo b{color:#000}
 @media print{
-  @page{size:A3 landscape;margin:10mm}
-  body{background:#fff}
-  .toolbar,.adminbar,.legend .hint,.add,.screen,#modal,.toast{display:none!important}
-  #app{padding:0;max-width:none}
-  .grid{grid-template-columns:1.5fr repeat(6,minmax(0,1fr))!important}
-  .dowrow{display:grid!important}
-  .cell{min-height:0;border:1px solid #E4E1D9;display:flex!important}
-  .wd{display:none!important}
-  .wk .th.empty{visibility:hidden}
+  body:not(.pm) #app{zoom:.7}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 </style>
@@ -637,9 +672,9 @@ function cellFor(d, col, m, todayIso, adm){
   });
   c.appendChild(dh);
   sp_.forEach(x => {
-    const K=KINDS[x.it.k]||KINDS.edu, ch=el("div","chip"); ch.style.background=K.bg;
+    const K=KINDS[x.it.k]||KINDS.edu, ch=el("div","chip"); ch.style.background=K.bg; ch.style.color=K.dot;
     const dot=el("span","dot"); dot.style.background=K.dot; ch.appendChild(dot);
-    const box=el("div"), t=el("div","t",x.it.title); t.style.color=K.fg; box.appendChild(t);
+    const box=el("div","bx"), t=el("div","t",x.it.title); t.style.color=K.fg; box.appendChild(t);
     if (adm && x.it.sid) t.appendChild(el("span","rep","↻"));
     if (x.it.meta){ const mm=el("div","m",x.it.meta); mm.style.color=K.fg; box.appendChild(mm); }
     ch.appendChild(box);
@@ -832,7 +867,23 @@ $("deptBtn").onclick=editDepts;
 $("prev").onclick=()=>{ view.m--; if (view.m<1){ view.m=12; view.y--; } render(); };
 $("next").onclick=()=>{ view.m++; if (view.m>12){ view.m=1; view.y++; } render(); };
 $("today").onclick=()=>{ const n=new Date(); view={y:n.getFullYear(), m:n.getMonth()+1}; render(); };
-$("print").onclick=()=>window.print();
+// 인쇄: 가로 A4 한 장에 맞게 자동 축소
+function preparePrint(){
+  const app=$("app"); document.body.classList.add("pm"); app.style.zoom="";
+  const W=1060, H=700;               // A4 가로(여백 8mm) 기준 px
+  let best={z:0,w:1400};
+  [1400,1550,1700,1850,2000].forEach(w => {
+    app.style.width=w+"px";
+    const z=Math.min(W/w, H/app.scrollHeight, 1);
+    if (z>best.z) best={z,w};
+  });
+  app.style.width=best.w+"px";
+  app.style.zoom=String(Math.max(0.45, best.z));
+}
+function endPrint(){ document.body.classList.remove("pm"); $("app").style.zoom=""; $("app").style.width=""; }
+window.addEventListener("beforeprint", preparePrint);
+window.addEventListener("afterprint", endPrint);
+$("print").onclick=()=>{ preparePrint(); setTimeout(()=>window.print(), 50); };
 </script>
 </body>
 </html>
