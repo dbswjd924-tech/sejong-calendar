@@ -118,6 +118,46 @@ button,input,select,textarea{font:inherit}
   .wd{display:inline}
   .dh{gap:8px}
 }
+/* 기간 일정 이어짐 */
+.cont{display:flex;align-items:center;gap:5px;padding:2px 8px;border-radius:5px;font-size:12px;font-weight:700;opacity:.9}
+.cont .arrow{font-size:11px}
+.period{font-size:11.5px;font-weight:700;margin-left:4px;white-space:nowrap}
+/* 입력창 공통 */
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.seg button,.wdays button{padding:8px 4px;border-radius:9px;border:1.5px solid var(--line);background:#fff;cursor:pointer;font-size:13px;font-weight:700;min-height:38px}
+.seg button.on,.wdays button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.wdays{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.wdays button:first-child{color:#C0392B}.wdays button:last-child{color:#2B4F8F}
+.wdays button.on{color:#fff!important}
+.mbox.wide{max-width:780px}
+/* 제출함 */
+.badge{display:inline-block;min-width:18px;padding:0 6px;border-radius:999px;background:#C0392B;color:#fff;font-size:12px;margin-left:4px}
+.rq{border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.rq.done{opacity:.6}
+.rq h3{margin:0;font-size:15px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.rq .who{font-size:13px;color:var(--mute);font-weight:400}
+.rq .st{font-size:12px;padding:2px 8px;border-radius:999px;background:#E4F1E8;color:#155C36}
+.rq ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}
+.rq li label{flex-direction:row;align-items:flex-start;gap:8px;font-weight:400;color:var(--ink);font-size:14px}
+.missing{font-size:13px;color:var(--sub);line-height:1.6;background:#FFF4C2;border-radius:8px;padding:8px 12px}
+/* 부서 제출 화면 */
+#submitApp{max-width:640px;margin:0 auto;padding:24px 16px 48px}
+.sbox{display:flex;flex-direction:column;gap:14px}
+.sbox h1{margin:0;font-size:30px;font-family:"Noto Serif KR","Nanum Myeongjo",serif}
+.sbox p{margin:0;color:var(--sub);font-size:14px;line-height:1.6}
+.sbox label{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700;color:var(--sub)}
+.sbox input,.sbox select,.sbox textarea{padding:11px 12px;border:1px solid var(--line);border-radius:10px;font-size:16px;background:#fff;color:var(--ink)}
+.sbox .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.sbox select,.sbox input{width:100%;min-width:0}
+.mbox .two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.mbox input,.mbox select{min-width:0;width:100%}
+.card{background:#fff;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.sitem{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.sitem .tx{flex:1;font-size:14px;line-height:1.5}
+.sitem .tx small{color:var(--mute);display:block}
+.sitem button{border:none;background:none;color:var(--red);font-size:13px;cursor:pointer;min-height:36px}
+.empty-list{color:var(--mute);font-size:14px;text-align:center;padding:14px}
+.done-box{background:#E4F1E8;color:#155C36;border-radius:12px;padding:16px;font-size:15px;line-height:1.6}
 /* ===== 인쇄 전용 (가로, 진한 테두리·글씨) ===== */
 @page{size:A4 landscape;margin:8mm}
 body.pm{background:#fff}
@@ -159,6 +199,8 @@ body.pm .sep{background:#999}
 body.pm .dept{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:6px}
 body.pm .bx{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:6px}
 body.pm .rep{display:none}
+body.pm .cont{font-size:12.5px;border:1px solid currentColor;opacity:1}
+body.pm .period{font-size:12.5px}
 body.pm .memo{font-size:14px;color:#000;margin-top:6px}
 body.pm .memo b{color:#000}
 @media print{
@@ -209,7 +251,7 @@ window.CAL_CONFIG = {
 
 <div id="lock" class="screen hidden">
   <form class="box" id="lockForm" autocomplete="off">
-    <h1>세종교회 월간 일정</h1>
+    <h1 id="lockTitle">세종교회 월간 일정</h1>
     <p id="lockMsg">열람 암호를 입력하세요.</p>
     <input type="password" id="viewPw" placeholder="열람 암호" aria-label="열람 암호">
     <label class="chk"><input type="checkbox" id="remember"> 이 기기에서 암호 기억하기</label>
@@ -226,6 +268,8 @@ window.CAL_CONFIG = {
     <button class="btn save" id="saveBtn">저장</button>
     <button class="btn" id="backupBtn">백업 받기</button>
     <button class="btn" id="restoreBtn">백업 불러오기</button>
+    <button class="btn" id="inboxBtn">제출함<span class="badge hidden" id="inboxBadge"></span></button>
+    <button class="btn" id="linkBtn">제출 링크</button>
     <button class="btn" id="deptBtn">부서 목록</button>
     <button class="btn" id="viewPwBtn">열람 암호 변경</button>
     <button class="btn" id="adminPwBtn">관리자 암호 변경</button>
@@ -254,6 +298,29 @@ window.CAL_CONFIG = {
   <div class="memo" id="memo"></div>
 </div>
 
+<div id="submitApp" class="hidden">
+  <div class="sbox">
+    <div class="eyebrow">세종교회 · 월간 일정</div>
+    <h1>부서 행사 제출</h1>
+    <p>대상 월의 행사를 입력하고 <b>제출하기</b>를 눌러주세요. 기획부에서 확인한 뒤 달력에 반영합니다. 작성 중인 내용은 이 기기에 임시 저장됩니다.</p>
+    <div class="card">
+      <label>부서<span id="sDeptWrap"></span></label>
+      <div class="two">
+        <label>담당자 이름<input type="text" id="sName" placeholder="예: 홍길동"></label>
+        <label>대상 월<select id="sMonth"></select></label>
+      </div>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:8px"><b style="flex:1">행사 목록</b><button class="btn primary" id="sAdd" type="button">+ 행사 추가</button></div>
+      <div id="sList"></div>
+    </div>
+    <div class="card"><label>전달 사항 (선택)<textarea id="sNote" rows="2" placeholder="예: 10/20 행사는 장소 미정입니다"></textarea></label></div>
+    <div class="err" id="sErr"></div>
+    <div id="sDone" class="done-box hidden"></div>
+    <div class="mrow"><a class="btn" href="./" id="sView">달력 보기</a><span class="sp"></span><button class="btn save" id="sSubmit" type="button">제출하기</button></div>
+  </div>
+</div>
+
 <div id="modal" class="hidden"><div class="mbox" id="mbox"></div></div>
 
 <script type="module">
@@ -261,6 +328,7 @@ window.CAL_CONFIG = {
 const CFG = window.CAL_CONFIG;
 const DEMO = !(CFG.firebase && CFG.firebase.apiKey && CFG.firebase.databaseURL && CFG.adminEmail);
 const $ = id => document.getElementById(id);
+const SUBMIT = /[?&#]submit\b/.test(location.search + location.hash);
 
 /* ---------------- 일정 종류·공휴일 ---------------- */
 const KINDS = {
@@ -307,7 +375,11 @@ async function hashPw(pw, saltB64){
 /* ---------------- 저장소 (Firebase 또는 데모) ---------------- */
 function makeDemoBackend(){
   const KEY = "sejong-cal-demo", AKEY = "sejong-cal-demo-admin";
-  let admin = false, cb = null;
+  let admin = false, cb = null, rcb = null;
+  const RKEY = "sejong-cal-demo-req";
+  const getReq = () => { try { return JSON.parse(localStorage.getItem(RKEY) || "{}"); } catch(e){ return {}; } };
+  const setReq = r => { localStorage.setItem(RKEY, JSON.stringify(r)); if (rcb) rcb(r); };
+  window.addEventListener("storage", e => { if (e.key === RKEY && rcb) rcb(getReq()); });
   const get = () => { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch(e){ return null; } };
   window.addEventListener("storage", e => { if (e.key === KEY && cb) cb(get()); });
   return {
@@ -325,7 +397,12 @@ function makeDemoBackend(){
       admin = true;
     },
     async logout(){ admin = false; },
-    async changeAdminPw(oldPw, newPw){ await this.login(oldPw); localStorage.setItem(AKEY, JSON.stringify(await hashPw(newPw))); }
+    async changeAdminPw(oldPw, newPw){ await this.login(oldPw); localStorage.setItem(AKEY, JSON.stringify(await hashPw(newPw))); },
+    // 제출함
+    async submit(blob){ const r=getReq(); r["r"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)]=blob; setReq(r); },
+    subscribeRequests(fn){ rcb=fn; fn(getReq()); return ()=>{ rcb=null; }; },
+    async updateRequest(id, fields){ const r=getReq(); if (r[id]) { Object.assign(r[id], fields); setReq(r); } },
+    async removeRequest(id){ const r=getReq(); delete r[id]; setReq(r); }
   };
 }
 async function makeFirebaseBackend(){
@@ -341,6 +418,7 @@ async function makeFirebaseBackend(){
     auM.connectAuthEmulator(auth, "http://127.0.0.1:9099", {disableWarnings:true});
   }
   const node = dbM.ref(db, CFG.dbPath + "/data");
+  const reqRef = dbM.ref(db, CFG.dbPath + "/requests");
   let user = null;
   await new Promise(res => { const off = auM.onAuthStateChanged(auth, u => { user = u; off(); res(); }); });
   auM.onAuthStateChanged(auth, u => { user = u; });
@@ -362,7 +440,12 @@ async function makeFirebaseBackend(){
       const cred = auM.EmailAuthProvider.credential(CFG.adminEmail, oldPw);
       await auM.reauthenticateWithCredential(auth.currentUser, cred);
       await auM.updatePassword(auth.currentUser, newPw);
-    }
+    },
+    // 제출함
+    submit(blob){ return dbM.push(reqRef, blob); },
+    subscribeRequests(fn){ return dbM.onValue(reqRef, s => fn(s.val() || {}), () => fn({})); },
+    updateRequest(id, fields){ return dbM.update(dbM.ref(db, CFG.dbPath + "/requests/" + id), fields); },
+    removeRequest(id){ return dbM.remove(dbM.ref(db, CFG.dbPath + "/requests/" + id)); }
   };
 }
 
@@ -377,7 +460,7 @@ const nowD = new Date();
 let view = {y: nowD.getFullYear(), m: nowD.getMonth() + 1};
 const REM = "sejong-cal-viewpw";
 
-function show(id){ ["loading","setup","lock","app"].forEach(x => $(x).classList.toggle("hidden", x !== id)); }
+function show(id){ ["loading","setup","lock","app","submitApp"].forEach(x => $(x).classList.toggle("hidden", x !== id)); }
 function toast(msg){ document.querySelectorAll(".toast").forEach(x=>x.remove()); const t=document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(), 3500); }
 function lsGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
 function lsSet(k,v){ try { v==null ? localStorage.removeItem(k) : localStorage.setItem(k,v); } catch(e){} }
@@ -395,7 +478,8 @@ function lsSet(k,v){ try { v==null ? localStorage.removeItem(k) : localStorage.s
     lastBlob = blob;
     if (first) {
       first = false;
-      if (!blob) { enterSetup(); return; }
+      if (!blob) { if (SUBMIT) { $("loading").querySelector("p").textContent = "아직 달력이 설정되지 않았습니다. 기획부에 문의해 주세요."; return; } enterSetup(); return; }
+      if (SUBMIT) { $("lockTitle").textContent = "부서 행사 제출"; $("lockMsg").textContent = "열람 암호를 입력하면 제출 화면이 열립니다."; }
       const rem = lsGet(REM);
       if (rem && await tryUnlock(rem, true)) return;
       show("lock"); $("viewPw").focus();
@@ -404,17 +488,26 @@ function lsSet(k,v){ try { v==null ? localStorage.removeItem(k) : localStorage.s
     // 실시간 갱신: 내가 방금 저장한 것이면 무시
     if (!blob || !key) return;
     if (blob.savedAt === mySavedAt) return;
+    if (SUBMIT) { try { if (blob.salt === b64(salt)) data = normalize(await decryptWith(key, blob)); } catch(e){} return; }
     if (dirty && B.isAdmin()) { toast("다른 곳에서 일정이 바뀌었습니다. 지금 수정 중인 내용을 저장하면 덮어씁니다."); return; }
+    if (modalOpen()) { pendingBlob = blob; return; }   // 입력창이 열려 있으면 닫힌 뒤에 반영
+    applyRemote(blob);
+  });
+})();
+let pendingBlob = null;
+async function applyRemote(blob){
+    if (!key || blob.savedAt === mySavedAt || (dirty && B.isAdmin())) return;
     try {
       if (blob.salt !== b64(salt)) throw new Error("salt");
-      data = await decryptWith(key, blob); render();
+      const d = normalize(await decryptWith(key, blob));
+      if (dirty && B.isAdmin()) { toast("다른 기기에서 바뀐 내용이 있습니다. 지금 저장하면 이 화면 기준으로 저장됩니다."); return; }
+      data = d; render();
     } catch(e){
       key = null; data = null; lsSet(REM, null);
       $("lockMsg").textContent = "열람 암호가 바뀌었습니다. 새 암호를 입력하세요.";
       show("lock");
     }
-  });
-})();
+}
 
 /* ---------------- 처음 설정 ---------------- */
 function enterSetup(){
@@ -451,13 +544,14 @@ function normalize(d){
   if (d.depts && Array.isArray(d.depts.jj) && Array.isArray(d.depts.d24)) n.depts=d.depts;
   dedupe(n); return n;
 }
+const sigOf = it => [it.k,it.dept||"",it.title,it.meta||"",it.end||""].join("|");
 // 같은 날짜에 똑같이 두 번 이상 들어간 일정 정리
 let dupRemoved = 0;
 function dedupe(n){
   let removed=0;
   Object.keys(n.days).forEach(k => {
     const seen=new Set(), out=[];
-    (n.days[k]||[]).forEach(it => { const sig=[it.k,it.dept||"",it.title,it.meta||""].join("|"); if (seen.has(sig)) removed++; else { seen.add(sig); out.push(it); } });
+    (n.days[k]||[]).forEach(it => { const sig=sigOf(it); if (seen.has(sig)) removed++; else { seen.add(sig); out.push(it); } });
     if (out.length) n.days[k]=out; else delete n.days[k];
   });
   dupRemoved += removed; return removed;
@@ -468,7 +562,7 @@ async function tryUnlock(pw, silent){
   try {
     const s = unb64(lastBlob.salt), k = await deriveKey(pw, s);
     const d = await decryptWith(k, lastBlob);
-    key = k; salt = s; data = normalize(d); openApp(); return true;
+    key = k; salt = s; data = normalize(d); if (SUBMIT) openSubmit(); else openApp(); return true;
   } catch(e){
     if (!silent) $("lockErr").textContent = "암호가 맞지 않습니다.";
     lsSet(REM, null); return false;
@@ -498,6 +592,8 @@ function applyMode(){
   $("adminbar").classList.toggle("hidden", !adm);
   $("adminBtn").classList.toggle("hidden", adm);
   paintSave();
+  if (adm && !unsubReq) unsubReq = B.subscribeRequests(onRequests);
+  if (!adm && unsubReq) { try { unsubReq(); } catch(e){} unsubReq = null; reqs = {}; }
 }
 $("adminBtn").onclick = () => openModal(b => {
   b.appendChild(h2("관리자 로그인"));
@@ -611,10 +707,22 @@ function holidaysOf(d){
   const f = FIXED[pad(d.getMonth()+1)+"-"+pad(d.getDate())]; if (f) out.push(f);
   if (LUNAR[k] && !out.includes(LUNAR[k])) out.push(LUNAR[k]);
   (data.days[k]||[]).forEach(it => { if (it.k==="holiday" && !out.includes(it.title)) out.push(it.title); });
+  (spans[k]||[]).forEach(x => { if (x.it.k==="holiday" && !out.includes(x.it.title)) out.push(x.it.title); });
   return out;
 }
+let spans = {};   // 기간 일정이 이어지는 날짜 → [{it, start, idx}]
+function buildSpans(){
+  spans = {};
+  Object.keys(data.days).forEach(k => (data.days[k]||[]).forEach((it, idx) => {
+    if (!it.end || it.end <= k) return;
+    let d = addDays(k, 1), guard = 0;
+    while (d <= it.end && guard++ < 400) { (spans[d] = spans[d] || []).push({it, start:k, idx}); d = addDays(d, 1); }
+  }));
+}
+const shortDate = k => { const [,m,d]=k.split("-").map(Number); return m+"/"+d; };
 function render(){
   if (!data) return;
+  buildSpans();
   const adm = B.isAdmin(), y=view.y, m=view.m, todayIso=iso(new Date());
   $("eyebrow").textContent = "신"+(y-1983)+"년 "+(data.motto||"")+" · 세종교회";
   $("mTitle").textContent = m+"월"; $("yTitle").textContent = "교회 일정 · "+y;
@@ -658,7 +766,8 @@ function render(){
 function cellFor(d, col, m, todayIso, adm){
   const k=iso(d), out=d.getMonth()!==m-1, hol=holidaysOf(d), items=(data.days[k]||[]).map((it,idx)=>({it,idx}));
   const sp_=items.filter(x=>x.it.k!=="dept"&&x.it.k!=="holiday"), rt=items.filter(x=>x.it.k==="dept");
-  const c=el("div","cell"+(out?" out":"")+(k===todayIso?" today":"")+(!sp_.length&&!rt.length&&!hol.length?" empty":""));
+  const cont=(spans[k]||[]).filter(x=>x.it.k!=="holiday");
+  const c=el("div","cell"+(out?" out":"")+(k===todayIso?" today":"")+(!sp_.length&&!rt.length&&!hol.length&&!cont.length?" empty":""));
   const dh=el("div","dh");
   const numCls = out?"out":(col===0||hol.length?"red":(col===6?"blue":""));
   dh.appendChild(el("span","num "+numCls, out?(d.getMonth()+1)+"/"+d.getDate():String(d.getDate())));
@@ -671,11 +780,20 @@ function cellFor(d, col, m, todayIso, adm){
     }
   });
   c.appendChild(dh);
+  cont.forEach(x => {
+    const K=KINDS[x.it.k]||KINDS.edu, r=el("div","cont"); r.style.background=K.bg; r.style.color=K.fg;
+    const last = x.it.end===k;
+    r.appendChild(el("span","arrow", last ? "◀ 끝" : "◀▶"));
+    r.appendChild(document.createTextNode((x.it.k==="dept" && x.it.dept ? x.it.dept+" " : "") + x.it.title));
+    if (adm) r.addEventListener("click", e=>{ e.stopPropagation(); editItem(x.start, x.idx); });
+    c.appendChild(r);
+  });
   sp_.forEach(x => {
     const K=KINDS[x.it.k]||KINDS.edu, ch=el("div","chip"); ch.style.background=K.bg; ch.style.color=K.dot;
     const dot=el("span","dot"); dot.style.background=K.dot; ch.appendChild(dot);
     const box=el("div","bx"), t=el("div","t",x.it.title); t.style.color=K.fg; box.appendChild(t);
     if (adm && x.it.sid) t.appendChild(el("span","rep","↻"));
+    if (x.it.end && x.it.end>k) t.appendChild(el("span","period","("+shortDate(k)+"~"+shortDate(x.it.end)+")"));
     if (x.it.meta){ const mm=el("div","m",x.it.meta); mm.style.color=K.fg; box.appendChild(mm); }
     ch.appendChild(box);
     if (adm) ch.addEventListener("click", e=>{ e.stopPropagation(); editItem(k, x.idx); });
@@ -686,6 +804,7 @@ function cellFor(d, col, m, todayIso, adm){
     const r=el("div","dept"+(isJJ(x.it.dept)?" jj":"")), t=el("div","t");
     t.appendChild(el("b",null,x.it.dept||"")); t.appendChild(document.createTextNode(" "+x.it.title));
     if (adm && x.it.sid) t.appendChild(el("span","rep","↻"));
+    if (x.it.end && x.it.end>k) t.appendChild(el("span","period","("+shortDate(k)+"~"+shortDate(x.it.end)+")"));
     r.appendChild(t); if (x.it.meta) r.appendChild(el("div","m",x.it.meta));
     if (adm) r.addEventListener("click", e=>{ e.stopPropagation(); editItem(k, x.idx); });
     c.appendChild(r);
@@ -699,9 +818,24 @@ function cellFor(d, col, m, todayIso, adm){
 function openModal(build){
   // 매번 새 상자로 바꿔서 이전 입력창의 Enter 동작이 남지 않게 함
   const old=$("mbox"), b=old.cloneNode(false); old.replaceWith(b); build(b); $("modal").classList.remove("hidden"); const f=b.querySelector("input,textarea"); if (f) f.focus(); }
-function closeModal(){ $("modal").classList.add("hidden"); }
-$("modal").addEventListener("click", e => { if (e.target.id==="modal") closeModal(); });
-document.addEventListener("keydown", e => { if (e.key==="Escape" && !$("modal").classList.contains("hidden")) closeModal(); });
+const modalOpen = () => !$("modal").classList.contains("hidden");
+function closeModal(){
+  $("modal").classList.add("hidden"); inboxOpen=false;
+  if (pendingBlob) { const pb=pendingBlob; pendingBlob=null; applyRemote(pb); }
+}
+// 바깥 클릭으로 닫기: 누른 곳과 뗀 곳이 모두 바깥일 때만 (글자 드래그하다 닫히는 것 방지)
+let downOnBackdrop=false;
+$("modal").addEventListener("mousedown", e => { downOnBackdrop = e.target.id==="modal"; });
+$("modal").addEventListener("click", e => {
+  if (e.target.id!=="modal" || !downOnBackdrop) return;
+  if ($("mbox").querySelector("input[type=text],textarea")) return;   // 입력칸이 있는 창은 취소 버튼으로만 닫기
+  closeModal();
+});
+document.addEventListener("keydown", e => {
+  if (e.key!=="Escape" || !modalOpen() || e.isComposing) return;
+  if ($("mbox").querySelector("input[type=text],textarea")) return;   // 입력 중에는 Esc로 닫지 않음
+  closeModal();
+});
 const h2 = t => el("h2", null, t);
 const sp = () => el("span","sp");
 const errDiv = () => { const e=el("div","err"); return e; };
@@ -714,7 +848,11 @@ function btn(text, cls, fn){
   b.addEventListener("click", e => { if (!b.isConnected || b.dataset.busy) return; if (cls==="primary"||cls==="danger") { b.dataset.busy="1"; setTimeout(()=>{ delete b.dataset.busy; }, 800); } fn(e); });
   return b;
 }
-function enterSubmits(b, go){ b.addEventListener("keydown", e => { if (e.key==="Enter" && e.target.tagName==="INPUT"){ e.preventDefault(); go.click(); } }); }
+// 한글 입력 중 Enter(글자 확정)는 무시하고, 확정된 뒤 Enter만 '확인'으로 처리
+function enterSubmits(b, go){ b.addEventListener("keydown", e => {
+  if (e.key!=="Enter" || e.isComposing || e.keyCode===229) return;
+  if (e.target.tagName==="INPUT" && e.target.type!=="date"){ e.preventDefault(); go.click(); }
+}); }
 
 function monthEnd(dateKey){ const [y,m]=dateKey.split("-").map(Number); return iso(new Date(y, m, 0)); }
 function addDays(dateKey, n){ const [y,m,d]=dateKey.split("-").map(Number); return iso(new Date(y, m-1, d+n)); }
@@ -744,43 +882,114 @@ function deptSelect(cur){
   wrap.getValue=()=> sel.value==="__custom" ? txt.value.trim() : sel.value;
   return wrap;
 }
+/* ---------- 일정 입력 칸 (관리자·부서 제출 공통) ---------- */
+const newSid = () => "s"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const dowOf = k => { const [y,m,d]=k.split("-").map(Number); return new Date(y,m-1,d).getDay(); };
+function dateInput(v){ const i=el("input"); i.type="date"; if (v) i.value=v; return i; }
+// init: {k,title,meta,dept,start,end}, opt: {allowRepeat, lockDate, defaultDept}
+function scheduleFields(b, init, opt){
+  let kind=init.k||"edu";
+  const kw=el("div","kinds");
+  Object.keys(KINDS).forEach(k => {
+    if (opt.noHoliday && k==="holiday") return;
+    const kb=el("button",k===kind?"on":"",KINDS[k].name); kb.type="button";
+    kb.style.background=KINDS[k].bg; kb.style.color=KINDS[k].fg;
+    if (k==="holiday") kb.style.boxShadow="inset 0 0 0 1px #E4E1D9";
+    kb.addEventListener("click", () => { kind=k; kw.querySelectorAll("button").forEach(x=>x.classList.remove("on")); kb.classList.add("on"); sync(); });
+    kw.appendChild(kb);
+  });
+  b.appendChild(field("종류", kw));
+  const deptS=deptSelect(init.dept||opt.defaultDept||""), titleI=inp(init.title,"예: 교회전도단"), metaI=inp(init.meta,"예: 09:10 · 교육관");
+  const dF=field("부서명", deptS), tF=field("내용", titleI), mF=field("시간 · 장소 (선택)", metaI);
+  b.appendChild(dF); b.appendChild(tF); b.appendChild(mF);
+
+  // 날짜
+  let mode = init.end && init.end>init.start ? "range" : "one";
+  const startI=dateInput(init.start), endI=dateInput(init.end||init.start), untilI=dateInput(init.start?monthEnd(init.start):"");
+  const segBox=el("div","seg"), modes=[["one","하루"],["range","기간 (여러 날)"]].concat(opt.allowRepeat?[["rep","반복"]]:[]);
+  modes.forEach(([v,t])=>{ const x=el("button",v===mode?"on":"",t); x.type="button"; x.addEventListener("click",()=>{ mode=v; segBox.querySelectorAll("button").forEach(y=>y.classList.remove("on")); x.classList.add("on"); syncDate(); }); segBox.appendChild(x); });
+  if (!opt.lockDate || opt.allowRepeat) b.appendChild(field("날짜 형태", segBox));
+  const sF=field(opt.lockDate?"날짜":"날짜 (시작일)", startI); if (opt.lockDate) startI.disabled=true;
+  const eF=field("끝나는 날", endI);
+  const two=el("div","two"); two.appendChild(sF); two.appendChild(eF); b.appendChild(two);
+  // 반복
+  const repBox=el("div"); repBox.style.cssText="display:flex;flex-direction:column;gap:10px";
+  const wdBox=el("div","wdays"); const picked=new Set([init.start?dowOf(init.start):0]);
+  let touched=false;
+  WD.forEach((n,i)=>{ const x=el("button",picked.has(i)?"on":"",n); x.type="button"; x.addEventListener("click",()=>{ touched=true; picked.has(i)?picked.delete(i):picked.add(i); x.classList.toggle("on"); }); wdBox.appendChild(x); });
+  const syncWd=()=>{ if (touched || !startI.value) return; picked.clear(); picked.add(dowOf(startI.value)); [...wdBox.children].forEach((x,i)=>x.classList.toggle("on", picked.has(i))); };
+  const every=el("select"); every.appendChild(new Option("매주","1")); every.appendChild(new Option("격주 (2주마다)","2"));
+  repBox.appendChild(field("반복할 요일 (여러 개 선택 가능)", wdBox));
+  const two2=el("div","two"); two2.appendChild(field("간격", every)); two2.appendChild(field("반복 끝나는 날", untilI)); repBox.appendChild(two2);
+  b.appendChild(repBox);
+  startI.addEventListener("change", ()=>{ syncWd(); if (endI.value<startI.value) endI.value=startI.value; if (!untilI.value || untilI.value<startI.value) untilI.value=monthEnd(startI.value); });
+  function syncDate(){ eF.classList.toggle("hidden", mode!=="range"); repBox.classList.toggle("hidden", mode!=="rep"); sF.firstChild.textContent = mode==="one" ? "날짜" : "시작일"; }
+  function sync(){ dF.classList.toggle("hidden", kind!=="dept"); mF.classList.toggle("hidden", kind==="holiday"); tF.firstChild.textContent = kind==="holiday"?"빨간 날 이름":"내용"; }
+  sync(); syncDate();
+  return {
+    titleI,
+    get(){
+      const t=titleI.value.trim(); if (!t) return {err:"내용을 입력하세요.", focus:titleI};
+      const dept=kind==="dept"?deptS.getValue():"";
+      if (kind==="dept" && !dept) return {err:"부서를 고르세요.", focus:deptS.querySelector("select")};
+      const start=startI.value; if (!start) return {err:"날짜를 고르세요.", focus:startI};
+      const spec={base:{k:kind, title:t, meta:kind==="holiday"?"":metaI.value.trim(), dept}, start};
+      if (mode==="range"){
+        if (!endI.value || endI.value<start) return {err:"끝나는 날이 시작일보다 앞입니다.", focus:endI};
+        if (endI.value>addDays(start,120)) return {err:"기간은 120일 이내로 넣어주세요.", focus:endI};
+        if (endI.value>start) spec.end=endI.value;
+      }
+      if (mode==="rep"){
+        if (!picked.size) return {err:"반복할 요일을 하나 이상 고르세요."};
+        const until=untilI.value||monthEnd(start);
+        if (until<start) return {err:"반복 끝나는 날이 시작일보다 앞입니다.", focus:untilI};
+        if (until>addDays(start,366)) return {err:"반복은 1년 이내로 넣어주세요.", focus:untilI};
+        spec.repeat={days:[...picked].sort(), every:+every.value, until};
+      }
+      return {spec};
+    }
+  };
+}
+function describeSpec(sp){
+  const b=sp.base, K=KINDS[b.k]||KINDS.edu, wd=WD[dowOf(sp.start)];
+  let when=shortDate(sp.start)+"("+wd+")";
+  if (sp.end) when+=" ~ "+shortDate(sp.end)+"("+WD[dowOf(sp.end)]+")";
+  if (sp.repeat) when+=" 부터 "+(sp.repeat.every===2?"격주 ":"매주 ")+sp.repeat.days.map(i=>WD[i]).join("·")+"요일, "+shortDate(sp.repeat.until)+"까지";
+  const what=(b.k==="dept"?b.dept+" ":"")+b.title+(b.meta?" · "+b.meta:"");
+  return {when, what, kind:K.name};
+}
+// 일정 넣기 → 실제로 들어간 날짜 수
+function addEvent(sp){
+  const put=(k, it)=>{ const l=data.days[k]||(data.days[k]=[]); if (l.some(x=>sigOf(x)===sigOf(it))) return 0; l.push(it); return 1; };
+  if (sp.repeat){
+    const sid=newSid(), [y,m,d]=sp.start.split("-").map(Number), s0=new Date(y,m-1,d), sun0=new Date(y,m-1,d-s0.getDay());
+    let n=0, k=sp.start, guard=0;
+    while (k<=sp.repeat.until && guard++<400){
+      const [yy,mm,dd]=k.split("-").map(Number), cur=new Date(yy,mm-1,dd);
+      const wk=Math.floor(Math.round((cur-sun0)/86400000)/7);
+      if (sp.repeat.days.includes(cur.getDay()) && wk % sp.repeat.every===0) n+=put(k, Object.assign({}, sp.base, {sid}));
+      k=addDays(k,1);
+    }
+    return n;
+  }
+  return put(sp.start, sp.end ? Object.assign({}, sp.base, {end:sp.end}) : Object.assign({}, sp.base));
+}
+
 function editItem(dateKey, idx){
   const list=data.days[dateKey]||[], it=idx>=0?list[idx]:{k:"edu",title:"",meta:"",dept:""};
-  let kind=it.k;
-  const dd=dateKey.split("-"), wdName=WD[new Date(+dd[0], +dd[1]-1, +dd[2]).getDay()];
+  const wdName=WD[dowOf(dateKey)], dd=dateKey.split("-");
   openModal(b => {
     b.appendChild(h2((+dd[1])+"월 "+(+dd[2])+"일("+wdName+") · "+(idx>=0?"일정 수정":"일정 추가")));
-    const kw=el("div","kinds");
-    Object.keys(KINDS).forEach(k => {
-      const kb=el("button",k===kind?"on":"",KINDS[k].name); kb.type="button";
-      kb.style.background=KINDS[k].bg; kb.style.color=KINDS[k].fg;
-      if (k==="holiday") kb.style.boxShadow="inset 0 0 0 1px #E4E1D9";
-      kb.addEventListener("click", () => { kind=k; kw.querySelectorAll("button").forEach(x=>x.classList.remove("on")); kb.classList.add("on"); sync(); });
-      kw.appendChild(kb);
-    });
-    b.appendChild(field("종류", kw));
-    const deptS=deptSelect(it.dept||""), titleI=inp(it.title,"예: 교회전도단"), metaI=inp(it.meta,"예: 09:10 · 교육관");
-    const dF=field("부서명", deptS), tF=field("내용", titleI), mF=field("시간 · 장소 (선택)", metaI);
-    b.appendChild(dF); b.appendChild(tF); b.appendChild(mF);
-
-    // 반복 (새 일정일 때)
-    let repSel=null, untilI=null, applyAll=null;
-    if (idx<0){
-      repSel=el("select");
-      [["none","반복 안 함"],["w1","매주 "+wdName+"요일"],["w2","격주 "+wdName+"요일 (2주마다)"]].forEach(([v,t])=>repSel.appendChild(new Option(t,v)));
-      untilI=el("input"); untilI.type="date"; untilI.value=monthEnd(dateKey); untilI.min=dateKey; untilI.max=addDays(dateKey, 366);
-      const two=el("div","two"); two.appendChild(field("반복", repSel)); const uF=field("반복 끝나는 날", untilI); two.appendChild(uF);
-      b.appendChild(two);
-      const syncRep=()=>uF.classList.toggle("hidden", repSel.value==="none"); syncRep();
-      repSel.addEventListener("change", syncRep);
-    } else if (it.sid){
+    const isSeries=idx>=0 && it.sid;
+    const F=scheduleFields(b, Object.assign({}, it, {start:dateKey}), {allowRepeat:!isSeries, lockDate:isSeries});
+    let applyAll=null;
+    if (isSeries){
       const lab=el("label","chkrow"); applyAll=el("input"); applyAll.type="checkbox";
       lab.appendChild(applyAll); lab.appendChild(document.createTextNode("이 날짜 이후의 같은 반복 일정에도 모두 적용"));
       b.appendChild(lab);
       b.appendChild(el("div","note","반복으로 넣은 일정입니다. 체크하지 않으면 이 날짜만 바뀝니다."));
     }
-    function sync(){ dF.classList.toggle("hidden", kind!=="dept"); mF.classList.toggle("hidden", kind==="holiday"); tF.firstChild.textContent = kind==="holiday"?"빨간 날 이름":"내용"; }
-    sync();
+    const er=errDiv(); b.appendChild(er);
     const btns=[];
     if (idx>=0) btns.push(btn("삭제","danger",() => {
       if (applyAll && applyAll.checked){
@@ -790,36 +999,163 @@ function editItem(dateKey, idx){
     }));
     btns.push(sp()); btns.push(btn("취소","",closeModal));
     const go=btn("확인","primary",() => {
-      const t=titleI.value.trim(); if (!t){ titleI.focus(); return; }
-      const dept=kind==="dept"?deptS.getValue():"";
-      if (kind==="dept" && !dept){ deptS.querySelector("select").focus(); return; }
-      const base={k:kind, title:t, meta:kind==="holiday"?"":metaI.value.trim(), dept};
-      if (idx>=0){
-        if (applyAll && applyAll.checked){
+      const r=F.get(); if (r.err){ er.textContent=r.err; if (r.focus) r.focus.focus(); return; }
+      const spc=r.spec;
+      if (isSeries){
+        const base=spc.base;
+        if (applyAll.checked){
           let n=0; eachInSeries(it.sid, dateKey, (l,i)=>{ l[i]=Object.assign({}, base, {sid:it.sid}); n++; });
           closeModal(); changed(); toast(n+"개 날짜의 반복 일정을 바꿨습니다."); return;
         }
-        list[idx]=it.sid ? Object.assign({}, base, {sid:it.sid}) : base;
-        closeModal(); changed(); return;
+        list[idx]=Object.assign({}, base, {sid:it.sid}); closeModal(); changed(); return;
       }
-      const rep=repSel?repSel.value:"none";
-      if (rep==="none"){
-        if (!data.days[dateKey]) data.days[dateKey]=list;
-        list.push(base); closeModal(); changed(); return;
-      }
-      const until=untilI.value||monthEnd(dateKey), step=rep==="w2"?14:7, sid="s"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-      let k=dateKey, n=0;
-      while (k<=until && n<60){
-        const l=data.days[k]||(data.days[k]=[]);
-        const sig=[base.k,base.dept,base.title,base.meta].join("|");
-        if (!l.some(x=>[x.k,x.dept||"",x.title,x.meta||""].join("|")===sig)) { l.push(Object.assign({}, base, {sid})); n++; }
-        k=addDays(k, step);
-      }
-      closeModal(); changed(); toast(n+"개 날짜에 반복 일정을 넣었습니다.");
+      if (idx>=0){ list.splice(idx,1); if (!list.length) delete data.days[dateKey]; }
+      const n=addEvent(spc);
+      closeModal(); changed();
+      if (spc.repeat) toast(n+"개 날짜에 반복 일정을 넣었습니다.");
+      else if (spc.end) toast("기간 일정을 넣었습니다 ("+shortDate(spc.start)+"~"+shortDate(spc.end)+").");
     });
     btns.push(go); b.appendChild(row(btns)); enterSubmits(b, go);
   });
 }
+
+/* ---------- 관리자: 제출함 ---------- */
+let reqs = {}, unsubReq = null, inboxOpen = false;
+async function onRequests(raw){
+  const out={};
+  for (const [id, blob] of Object.entries(raw||{})){
+    const r={id, blob, applied:blob.applied||0};
+    try { if (blob.salt!==b64(salt)) throw 0; r.d=await decryptWith(key, blob); } catch(e){ r.err=true; }
+    out[id]=r;
+  }
+  reqs=out; paintBadge(); if (inboxOpen && modalOpen() && $("mbox").dataset.kind==="inbox") openInbox();
+}
+function paintBadge(){
+  const n=Object.values(reqs).filter(r=>!r.applied && !r.err).length, bd=$("inboxBadge");
+  bd.textContent=n; bd.classList.toggle("hidden", !n);
+}
+function openInbox(month){
+  inboxOpen=true;
+  const months=[...new Set(Object.values(reqs).filter(r=>r.d).map(r=>r.d.month))];
+  const vm=view.y+"-"+pad(view.m); if (!months.includes(vm)) months.push(vm);
+  months.sort();
+  const cur=month || openInbox.cur || vm; openInbox.cur=cur;
+  openModal(b => {
+    b.classList.add("wide"); b.dataset.kind="inbox";
+    b.appendChild(h2("부서 제출함"));
+    const ms=el("select"); months.forEach(x=>ms.appendChild(new Option(x.replace("-","년 ")+"월", x))); ms.value=cur;
+    ms.addEventListener("change", ()=>openInbox(ms.value));
+    b.appendChild(field("대상 월", ms));
+    const list=Object.values(reqs).filter(r=>r.d && r.d.month===cur).sort((a,c)=>(c.d.at||0)-(a.d.at||0));
+    const L=deptLists(), all=[...L.jj, ...L.d24], got=new Set(list.map(r=>r.d.dept));
+    const miss=all.filter(x=>!got.has(x));
+    b.appendChild(el("div","missing", "제출 "+got.size+"개 부서 · 미제출 "+miss.length+"개: "+(miss.join(", ")||"없음")));
+    const bad=Object.values(reqs).filter(r=>r.err);
+    if (bad.length) b.appendChild(el("div","note", "읽을 수 없는 제출 "+bad.length+"건이 있습니다 (열람 암호를 바꾸기 전에 제출된 것). 아래에서 삭제할 수 있습니다."));
+    if (!list.length) b.appendChild(el("div","empty-list","이 달에 들어온 제출이 없습니다."));
+    list.forEach(r => {
+      const box=el("div","rq"+(r.applied?" done":"")), hd=el("h3");
+      hd.appendChild(document.createTextNode(r.d.dept||"(부서 없음)"));
+      hd.appendChild(el("span","who", (r.d.name||"")+" · "+new Date(r.d.at||0).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"})+" 제출"));
+      if (r.applied) hd.appendChild(el("span","st","반영됨"));
+      box.appendChild(hd);
+      const ul=el("ul"), checks=[];
+      (r.d.items||[]).forEach(sp0 => {
+        const ds=describeSpec(sp0), li=el("li"), lab=el("label"), cb=el("input"); cb.type="checkbox"; cb.checked=!r.applied;
+        lab.appendChild(cb); const tx=el("span"); tx.innerHTML=""; tx.appendChild(el("b",null,ds.when+" ")); tx.appendChild(document.createTextNode("["+ds.kind+"] "+ds.what));
+        lab.appendChild(tx); li.appendChild(lab); ul.appendChild(li); checks.push([cb, sp0]);
+      });
+      box.appendChild(ul);
+      if (r.d.note) box.appendChild(el("div","note","전달 사항: "+r.d.note));
+      box.appendChild(row([
+        btn("삭제","danger", async ()=>{ if (!confirm(r.d.dept+" 제출을 삭제할까요?")) return; await B.removeRequest(r.id); }),
+        sp(),
+        btn(r.applied?"다시 반영":"선택한 일정 달력에 반영","primary", async ()=>{
+          let n=0, c=0; checks.forEach(([cb,sp0])=>{ if (cb.checked){ c++; n+=addEvent(sp0); } });
+          if (!c){ toast("반영할 일정을 고르세요."); return; }
+          changed(); await saveNow(); await B.updateRequest(r.id, {applied:Date.now()});
+          toast(r.d.dept+": "+n+"개 날짜에 반영했습니다."+(n<c?" (이미 있는 일정은 건너뜀)":""));
+        })
+      ]));
+      b.appendChild(box);
+    });
+    bad.forEach(r => { const box=el("div","rq done"); box.appendChild(el("div",null,"읽을 수 없는 제출")); box.appendChild(row([sp(), btn("삭제","danger", ()=>B.removeRequest(r.id))])); b.appendChild(box); });
+    b.appendChild(row([sp(), btn("닫기","",closeModal)]));
+  });
+}
+function showLink(){
+  const url=location.origin+location.pathname+"?submit";
+  openModal(b => {
+    b.appendChild(h2("부서 제출 링크"));
+    b.appendChild(el("p",null,"이 주소와 열람 암호를 부서 담당자에게 보내주세요. 담당자는 일정을 수정할 수 없고 제출만 할 수 있습니다."));
+    const i=inp(url); i.readOnly=true; b.appendChild(i);
+    b.appendChild(row([sp(), btn("닫기","",closeModal), btn("주소 복사","primary", async ()=>{ try { await navigator.clipboard.writeText(url); toast("복사했습니다."); } catch(e){ i.select(); toast("주소를 길게 눌러 복사하세요."); } })]));
+  });
+}
+
+/* ---------- 부서 제출 화면 ---------- */
+const DRAFT="sejong-submit-draft";
+let sItems=[], sDept=null;
+function openSubmit(){
+  show("submitApp");
+  let dr={}; try { dr=JSON.parse(lsGet(DRAFT)||"{}"); } catch(e){}
+  sDept=deptSelect(dr.dept||""); const w=$("sDeptWrap"); w.innerHTML=""; w.appendChild(sDept);
+  const ms=$("sMonth"); ms.innerHTML="";
+  const n=new Date(); for (let i=0;i<4;i++){ const d=new Date(n.getFullYear(), n.getMonth()+i, 1); ms.appendChild(new Option(d.getFullYear()+"년 "+(d.getMonth()+1)+"월", d.getFullYear()+"-"+pad(d.getMonth()+1))); }
+  ms.selectedIndex = n.getDate()>=15 ? 1 : 0;
+  if (dr.month && [...ms.options].some(o=>o.value===dr.month)) ms.value=dr.month;
+  $("sName").value=dr.name||""; $("sNote").value=dr.note||""; sItems=dr.items||[];
+  [$("sName"),$("sNote"),ms].forEach(x=>x.oninput=x.onchange=saveDraft);
+  sDept.addEventListener("change", saveDraft); sDept.addEventListener("input", saveDraft);
+  paintSubmit();
+}
+function saveDraft(){ lsSet(DRAFT, JSON.stringify({dept:sDept.getValue(), name:$("sName").value, month:$("sMonth").value, note:$("sNote").value, items:sItems})); }
+function paintSubmit(){
+  const box=$("sList"); box.innerHTML="";
+  if (!sItems.length) box.appendChild(el("div","empty-list","아직 넣은 행사가 없습니다. ‘+ 행사 추가’를 눌러주세요."));
+  sItems.sort((a,c)=>a.start<c.start?-1:1).forEach((sp0,i) => {
+    const ds=describeSpec(sp0), r=el("div","sitem"), tx=el("div","tx");
+    tx.appendChild(el("b",null,ds.when)); tx.appendChild(el("small",null,"["+ds.kind+"] "+ds.what));
+    r.appendChild(tx);
+    const ed=el("button",null,"수정"); ed.style.color="var(--sub)"; ed.onclick=()=>submitItem(i); r.appendChild(ed);
+    const del=el("button",null,"삭제"); del.onclick=()=>{ sItems.splice(i,1); saveDraft(); paintSubmit(); }; r.appendChild(del);
+    box.appendChild(r);
+  });
+}
+function submitItem(i){
+  const cur=i>=0?sItems[i]:null, mon=$("sMonth").value;
+  const init=cur?Object.assign({}, cur.base, {start:cur.start, end:cur.end}):{k:"dept", dept:sDept.getValue(), start:mon+"-01"};
+  openModal(b => {
+    b.appendChild(h2(cur?"행사 수정":"행사 추가"));
+    const F=scheduleFields(b, init, {allowRepeat:true, noHoliday:true, defaultDept:sDept.getValue()});
+    const er=errDiv(); b.appendChild(er);
+    const go=btn("확인","primary",()=>{
+      const r=F.get(); if (r.err){ er.textContent=r.err; if (r.focus) r.focus.focus(); return; }
+      if (cur) sItems[i]=r.spec; else sItems.push(r.spec);
+      saveDraft(); closeModal(); paintSubmit();
+    });
+    b.appendChild(row([sp(), btn("취소","",closeModal), go])); enterSubmits(b, go);
+  });
+}
+$("sAdd").onclick=()=>submitItem(-1);
+$("sSubmit").onclick=async ()=>{
+  const er=$("sErr"); er.textContent="";
+  const dept=sDept.getValue(), name=$("sName").value.trim();
+  if (!dept){ er.textContent="부서를 고르세요."; return; }
+  if (!name){ er.textContent="담당자 이름을 적어주세요."; $("sName").focus(); return; }
+  if (!sItems.length){ er.textContent="행사를 하나 이상 넣어주세요."; return; }
+  const bt=$("sSubmit"); bt.disabled=true; bt.textContent="제출 중…";
+  try {
+    const payload={dept, name, month:$("sMonth").value, note:$("sNote").value.trim(), items:sItems, at:Date.now()};
+    const blob=await encryptWith(key, salt, payload); delete blob.savedAt;
+    await B.submit(blob);
+    $("sDone").textContent = dept+" · "+$("sMonth").selectedOptions[0].text+" 행사 "+sItems.length+"건을 제출했습니다. 고칠 내용이 있으면 다시 제출하시면 됩니다 (기획부에서 최신 제출을 확인합니다).";
+    $("sDone").classList.remove("hidden");
+    sItems=[]; $("sNote").value=""; saveDraft(); paintSubmit(); window.scrollTo(0, document.body.scrollHeight);
+  } catch(e){ er.textContent="제출하지 못했습니다. 인터넷 연결을 확인하고 다시 눌러주세요."; }
+  bt.disabled=false; bt.textContent="제출하기";
+};
+
 function editDepts(){
   const L=deptLists();
   openModal(b => {
@@ -864,6 +1200,8 @@ function editMemo(mk){
 }
 
 $("deptBtn").onclick=editDepts;
+$("inboxBtn").onclick=()=>openInbox();
+$("linkBtn").onclick=showLink;
 $("prev").onclick=()=>{ view.m--; if (view.m<1){ view.m=12; view.y--; } render(); };
 $("next").onclick=()=>{ view.m++; if (view.m>12){ view.m=1; view.y++; } render(); };
 $("today").onclick=()=>{ const n=new Date(); view={y:n.getFullYear(), m:n.getMonth()+1}; render(); };
